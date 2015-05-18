@@ -1,2 +1,4 @@
-# WebGeoATAT
-Web Library for Geometry with Applications To Anthropology and Teaching
+# GLEAT
+Geometry Library for Evolutionary Anthropology and Teaching
+
+By Tingran Gao and Chris Tralie
