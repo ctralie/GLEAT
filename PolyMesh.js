@@ -1,7 +1,7 @@
 //TODO: Figure out how to jointly require gl-matrix-min.js
 
 function MeshVertex(P, ID) {
-	this.pos = P; //Type vec3
+	this.pos = vec3.clone(P); //Type vec3
 	this.texCoords = [0.0, 0.0];
 	this.ID = ID;
 	this.edges = [];
@@ -212,7 +212,7 @@ function getFaceInCommon(e1, e2) {
 	if (!(e2.f1 === null)) {
 		e2faces.push(e2.f1);
 	}
-	if (!(e2.f2 === null) {
+	if (!(e2.f2 === null)) {
 		e2faces.push(e2.f2);
 	}
 	if (e2faces.indexOf(e1.f1)) {
@@ -258,16 +258,16 @@ function PolyMesh() {
 	/////////////////////////////////////////////////////////////	
 	
 	this.addVertex = function(P, color) {
-		vertex = new MeshVertex(P, len(this.vertices));
+		vertex = new MeshVertex(P, this.vertices.length);
 		vertex.color = (typeof color !== 'undefined' ? color : null);
-		self.vertices.push(vertex);
+		this.vertices.push(vertex);
 		return vertex;
 	}
 	
 	//Create an edge between v1 and v2 and return it
 	//This function assumes v1 and v2 are valid vertices in the mesh
 	this.addEdge = function(v1, v2) {
-		edge = new MeshEdge(v1, v2, len(this.edges));
+		edge = new MeshEdge(v1, v2, this.edges.length);
 		this.edges.push(edge);
 		v1.edges.push(edge);
 		v2.edges.push(edge);
@@ -281,73 +281,160 @@ function PolyMesh() {
 		for (var i = 0; i < verts.length; i++) {
 			verts[i] = verts[i].pos;
 		}
-	/////////////////////////////////////////////////////////////////////////////
-	////TODO: CONTINUE TRANSLATING BELOW THIS POINT///////////////////////////////////
-		if not arePlanar(verts):
-			sys.stderr.write("Error: Trying to add mesh face that is not planar\n")
-			for v in verts:
-				print v
-			return None
-		if not are2DConvex(verts):
-			sys.stderr.write("Error: Trying to add mesh face that is not convex\n")
-			return None
-		face = MeshFace(len(self.faces))
-		face.startV = meshVerts[0]
-		for i in range(0, len(meshVerts)):
-			v1 = meshVerts[i]
-			v2 = meshVerts[(i+1)%len(meshVerts)]
-			edge = self.getEdge(v1, v2)
-			if edge == None:
-				edge = self.addEdge(v1, v2)
-			face.edges.append(edge)
-			edge.addFace(face, v1) #Add pointer to face from edge
-		self.faces.append(face)
-		return face
+		if (!arePlanar(verts)) {
+			console.log("Error (PolyMesh.addFace): Trying to add mesh face that is not planar\n")
+			for (var i = 0; i < verts.length; i++) {
+				console.log(vecStr(verts[i]) + ", ");
+			}
+			return null;
+		}
+		if (!are2DConvex(verts)) {
+			console.log("Error (PolyMesh.addFace): Trying to add mesh face that is not convex\n");
+			return null;
+		}
+		var face = new MeshFace(this.faces.length);
+		face.startV = meshVerts[0];
+		for (var i = 0; i < meshVerts.length; i++) {
+			var v1 = meshVerts[i];
+			var v2 = meshVerts[(i+1)%len(meshVerts)];
+			var edge = this.getEdgeInCommon(v1, v2);
+			if (edge === null) {
+				edge = this.addEdge(v1, v2);
+			}
+			face.edges.push(edge);
+			edge.addFace(face, v1); //Add pointer to face from edge
+		}
+		this.faces.append(face);
+		return face;
 	}
 	
-	#Remove the face from the list of faces and remove the pointers
-	#from all edges to this face
-	def removeFace(self, face):
-		#Swap the face to remove with the last face (O(1) removal)
-		self.faces[face.ID] = self.faces[-1]
-		self.faces[face.ID].ID = face.ID #Update ID of swapped face
-		face.ID = -1
-		self.faces.pop()
-		#Remove pointers from all of the face's edges
-		for edge in face.edges:
-			edge.removeFace(face)
+	//Remove the face from the list of faces and remove the pointers
+	//from all edges to this face
+	this.removeFace = function(face) {
+		//Swap the face to remove with the last face (O(1) removal)
+		this.faces[face.ID] = this.faces[this.faces.length-1];
+		this.faces[face.ID].ID = face.ID //Update ID of swapped face
+		face.ID = -1;
+		this.faces.pop();
+		//Remove pointers from all of the face's edges
+		for (var i = 0; i < faces.edges.length; i++) {
+			edge.removeFace(faces[i]);
+		}
+	}
 	
-	#Remove this edge from the list of edges and remove 
-	#references to the edge from both of its vertices
-	#(NOTE: This function is not responsible for cleaning up
-	#faces that may have used this edge; that is up to the client)
-	def removeEdge(self, edge):
-		#Swap the edge to remove with the last edge
-		self.edges[edge.ID] = self.edges[-1]
-		self.edges[edge.ID].ID = edge.ID #Update ID of swapped face
-		edge.ID = -1
-		self.edges.pop()
-		#Remove pointers from the two vertices that make up this edge
-		edge.v1.edges.remove(edge)
-		edge.v2.edges.remove(edge)
+	//Remove this edge from the list of edges and remove 
+	//references to the edge from both of its vertices
+	//(NOTE: This function is not responsible for cleaning up
+	//faces that may have used this edge; that is up to the client)
+	this.removeEdge = function(edge) {
+		//Swap the edge to remove with the last edge
+		this.edges[edge.ID] = this.edges[this.edges.length-1];
+		this.edges[edge.ID].ID = edge.ID; //Update ID of swapped face
+		edge.ID = -1;
+		this.edges.pop();
+		//Remove pointers from the two vertices that make up this edge
+		var i = edge.v1.edges.indexOf(edge);
+		edge.v1.edges[i] = edge.v1.edges[edge.v1.edges.length-1];
+		edge.v1.edges.pop();
+		i = edge.v2.edges.indexOf(edge);
+		edge.v2.edges[i] = edge.v2.edges[edge.v2.edges.length-1];
+		edge.v2.edges.pop();
+	}
 	
-	#Remove this vertex from the list of vertices
-	#NOTE: This function is not responsible for cleaning up any of
-	#the edges or faces that may have used this vertex
-	def removeVertex(self, vertex):
-		self.vertices[vertex.ID] = self.vertices[-1]
-		self.vertices[vertex.ID].ID = vertex.ID
-		vertex.ID = -1
-		self.vertices.pop()	
+	//Remove this vertex from the list of vertices
+	//NOTE: This function is not responsible for cleaning up any of
+	//the edges or faces that may have used this vertex
+	this.removeVertex = function(vertex) {
+		this.vertices[vertex.ID] = this.vertices[this.vertices.length-1];
+		this.vertices[vertex.ID].ID = vertex.ID;
+		vertex.ID = -1;
+		this.vertices.pop();
+	}
 	
+	//Make a clone of this mesh in memory
 	this.Clone = function() {
 		newMesh = new PolyMesh();
-		for i in range(len(self.vertices)):
-			newMesh.addVertex(self.vertices[i].pos, self.vertices[i].color)
-		for i in range(len(self.faces)):
-			vertices = [newMesh.vertices[v.ID] for v in self.faces[i].getVertices()]
-			newMesh.addFace(vertices)
-		return newMesh
+		for (var i = 0; i < this.vertices.length; i++) {
+			newMesh.addVertex(this.vertices[i].pos, this.vertices[i].color);
+		}
+		for (var i = 0; i < this.faces.length; i++) {
+			vertices = this.faces[i].getVertices();
+			for (var j = 0; j < vertices.length; j++) {
+				vertices[j] = newMesh.vertices[vertices[j].ID];
+			}
+			newMesh.addFace(vertices);
+		}
+		return newMesh;
+	}
+	
+	/////////////////////////////////////////////////////////////
+	////                INPUT/OUTPUT METHODS                /////
+	/////////////////////////////////////////////////////////////
+	this.loadFile = function(lines) {
+		if (fields[0].toUpperCase() == "OFF" || fields[0].toUpperCase() == "COFF") {
+			this.loadOffFile(fields);
+		}
+		else {
+			console.log("Unsupported file type " + fields[0] + " for loading mesh");
+		}
+		this.needsDisplayUpdate = true;
+		this.needsIndexDisplayUpdate = true;
+	}	
+	
+	this.loadOffFile = function(lines) {
+		var nVertices = 0;
+		var nFaces = 0;
+		var nEdges = 0;
+		var lineCount = 0;
+		var face = 0;
+		var vertex = 0;
+		var divideColor = false;
+		var fieldNum = 0;
+		/*for line in fin:
+			lineCount = lineCount+1
+			fields = line.split() #Splits whitespace by default
+			if len(fields) == 0: #Blank line
+				continue
+			if fields[0][0] in ['#', '\0', ' '] or len(fields[0]) == 0:
+				continue
+			#Check section
+			if nVertices == 0:
+				if fields[0] == "OFF" or fields[0] == "COFF":
+					if len(fields) > 2:
+						fields[1:4] = [int(field) for field in fields]
+						[nVertices, nFaces, nEdges] = fields[1:4]		
+					if fields[0] == "COFF":
+						divideColor = True			
+				else:
+					fields[0:3] = [int(field) for field in fields]
+					[nVertices, nFaces, nEdges] = fields[0:3]
+			elif vertex < nVertices:
+				fields = [float(i) for i in fields]
+				P = Point3D(fields[0],fields[1], fields[2])
+				color = None
+				if len(fields) >= 6:
+					#There is color information
+					if divideColor:
+						color = [float(c)/255.0 for c in fields[3:6]]
+					else:
+						color = [float(c) for c in fields[3:6]]
+				self.addVertex(P, color)
+				vertex = vertex+1
+			elif face < nFaces:
+				#Assume the vertices are specified in CCW order
+				fields = [int(i) for i in fields]
+				meshVerts = fields[1:fields[0]+1]
+				verts = [self.vertices[i] for i in meshVerts]
+				self.addFace(verts)
+				face = face+1
+		fin.close()
+		for v in self.vertices:
+			if v.color:
+				if v.color[0] > 1:
+					#Rescale colors
+					for v2 in self.vertices:
+						v2.color = [a/255.0 for a in v2.color]
+					break*/
 	}
 	
 	

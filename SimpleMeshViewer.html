@@ -1,0 +1,52 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!--External Libraries!-->
+<script type = "text/javascript" src = "js/ammo.js"></script>
+<!--<script type="text/javascript" src="js/gl-matrix.js"></script>!-->
+<script type="text/javascript" src = "js/gl-matrix-min.js"></script>
+<script type="text/javascript" src="js/webgl-utils.js"></script>
+<script type="text/javascript" src="js/numeric-1.2.6.min.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+
+<!--Our Scripts!-->
+<script src="PolyMesh.js"></script>
+<script src="Primitives3D.js"></script>
+</head>
+
+<body>
+
+<table>
+<tr><td><h3>Mesh File</h3></td><td><input type = "file" id = "meshInput"></td></tr>
+</table>
+
+<script>
+	var meshInput = document.getElementById('meshInput');
+	var result = document.getElementById('text');
+	
+	meshInput.addEventListener('change', function(e) {
+		var file = meshInput.files[0];
+		var textType = /text.*/;
+		
+		if (file.type.match(textType) || file.type == "model/x-geomview-off") {
+			var reader = new FileReader();
+			reader.onload = function(e) {
+				//http://blog.tompawlak.org/split-string-into-tokens-javascript
+				//var fields = reader.result.match(/\S+/g);
+				var lines = reader.result.split("\n");
+				for (var i = 0; i < lines.length; i++) {
+					console.log(lines[i]);
+				}
+				//PolyMesh mesh = new PolyMesh();
+				//mesh.loadFile(fields);
+			}
+			reader.readAsText(file);	
+		} else {
+			console.log("File type not supported for mesh!  Expecting text or OFF file");
+		}
+	});
+</script>
+
+</body>
+</html>

@@ -164,7 +164,7 @@ function are2DConvex(verts) {
 		if (vec3.dot(cross, lastCross) < 0) {
 			return false;
 		}
-		lastCross = cross;
+		lastCross = vec3.clone(cross);
 	}
 	return true;
 }
