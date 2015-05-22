@@ -245,12 +245,14 @@ function getVertexInCommon(e1, e2) {
 	return null;
 }
 
-//Shape Objects
+//Main Polygon Mesh Class
 function PolyMesh() {
 	this.vertices = [];
 	this.edges = [];
 	this.faces = [];
 	this.components = [];
+	this.needsDisplayUpdate = true;
+	this.needsIndexDisplayUpdate = true;
 	
 	
 	/////////////////////////////////////////////////////////////

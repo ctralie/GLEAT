@@ -15,13 +15,15 @@
 <script src="Primitives3D.js"></script>
 </head>
 
-<body>
+<body onload="webGLStart();">
 
 <table>
 <tr><td><h3>Mesh File</h3></td><td><input type = "file" id = "meshInput"></td></tr>
 </table>
+<canvas id="MainGLCanvas" style="border: none;" width="800" height="600"></canvas>
 
 <script>
+	//Load in the mesh
 	var meshInput = document.getElementById('meshInput');
 	var result = document.getElementById('text');
 	
@@ -41,6 +43,21 @@
 			console.log("File type not supported for mesh!  Expecting text or OFF file");
 		}
 	});
+	
+	function initGL(canvas) {
+		try {
+		    gl = canvas.getContext("experimental-webgl");
+		    gl.viewportWidth = canvas.width;
+		    gl.viewportHeight = canvas.height;
+		} catch (e) {
+		}
+		if (!gl) {
+		    alert("Could not initialise WebGL, sorry :-(.  Try a new version of chrome or firefox and make sure your newest graphics drivers are installed");
+		}
+	}
+
+	
+	
 </script>
 
 </body>
