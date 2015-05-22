@@ -32,14 +32,9 @@
 		if (file.type.match(textType) || file.type == "model/x-geomview-off") {
 			var reader = new FileReader();
 			reader.onload = function(e) {
-				//http://blog.tompawlak.org/split-string-into-tokens-javascript
-				//var fields = reader.result.match(/\S+/g);
 				var lines = reader.result.split("\n");
-				for (var i = 0; i < lines.length; i++) {
-					console.log(lines[i]);
-				}
-				//PolyMesh mesh = new PolyMesh();
-				//mesh.loadFile(fields);
+				var mesh = new PolyMesh();
+				mesh.loadFile(lines);
 			}
 			reader.readAsText(file);	
 		} else {

@@ -226,8 +226,8 @@ function getFaceInCommon(e1, e2) {
 
 function getEdgeInCommon(v1, v2) {
 	for (var i = 0; i < v1.edges.length; i++) {
-		if (edges[i].vertexAcross(v1) === v2) {
-			return e;
+		if (v1.edges[i].vertexAcross(v1) === v2) {
+			return v1.edges[i];
 		}
 	}
 	return null;
@@ -277,34 +277,37 @@ function PolyMesh() {
 	//Given a list of pointers to mesh vertices in CCW order
 	//create a face object from them
 	this.addFace = function(meshVerts) {
-		var verts = Array(meshVerts.length);
-		for (var i = 0; i < verts.length; i++) {
-			verts[i] = verts[i].pos;
+		var vertsPos = Array(meshVerts.length);
+		for (var i = 0; i < vertsPos.length; i++) {
+			vertsPos[i] = meshVerts[i].pos;
 		}
-		if (!arePlanar(verts)) {
+		if (!arePlanar(vertsPos)) {
 			console.log("Error (PolyMesh.addFace): Trying to add mesh face that is not planar\n")
-			for (var i = 0; i < verts.length; i++) {
-				console.log(vecStr(verts[i]) + ", ");
+			for (var i = 0; i < vertsPos.length; i++) {
+				console.log(vecStr(vertsPos[i]) + ", ");
 			}
 			return null;
 		}
-		if (!are2DConvex(verts)) {
+		if (!are2DConvex(vertsPos)) {
 			console.log("Error (PolyMesh.addFace): Trying to add mesh face that is not convex\n");
+			for (var i = 0; i < vertsPos.length; i++) {
+				console.log(vecStr(vertsPos[i]) + ", ");
+			}
 			return null;
 		}
 		var face = new MeshFace(this.faces.length);
 		face.startV = meshVerts[0];
 		for (var i = 0; i < meshVerts.length; i++) {
 			var v1 = meshVerts[i];
-			var v2 = meshVerts[(i+1)%len(meshVerts)];
-			var edge = this.getEdgeInCommon(v1, v2);
+			var v2 = meshVerts[(i+1)%meshVerts.length];
+			var edge = getEdgeInCommon(v1, v2);
 			if (edge === null) {
 				edge = this.addEdge(v1, v2);
 			}
 			face.edges.push(edge);
 			edge.addFace(face, v1); //Add pointer to face from edge
 		}
-		this.faces.append(face);
+		this.faces.push(face);
 		return face;
 	}
 	
@@ -371,8 +374,12 @@ function PolyMesh() {
 	////                INPUT/OUTPUT METHODS                /////
 	/////////////////////////////////////////////////////////////
 	this.loadFile = function(lines) {
+		if (lines.length == 0) {
+			return;
+		}
+		var fields = lines[0].match(/\S+/g);
 		if (fields[0].toUpperCase() == "OFF" || fields[0].toUpperCase() == "COFF") {
-			this.loadOffFile(fields);
+			this.loadOffFile(lines);
 		}
 		else {
 			console.log("Unsupported file type " + fields[0] + " for loading mesh");
@@ -385,56 +392,96 @@ function PolyMesh() {
 		var nVertices = 0;
 		var nFaces = 0;
 		var nEdges = 0;
-		var lineCount = 0;
 		var face = 0;
 		var vertex = 0;
 		var divideColor = false;
 		var fieldNum = 0;
-		/*for line in fin:
-			lineCount = lineCount+1
-			fields = line.split() #Splits whitespace by default
-			if len(fields) == 0: #Blank line
-				continue
-			if fields[0][0] in ['#', '\0', ' '] or len(fields[0]) == 0:
-				continue
-			#Check section
-			if nVertices == 0:
-				if fields[0] == "OFF" or fields[0] == "COFF":
-					if len(fields) > 2:
-						fields[1:4] = [int(field) for field in fields]
-						[nVertices, nFaces, nEdges] = fields[1:4]		
-					if fields[0] == "COFF":
-						divideColor = True			
-				else:
-					fields[0:3] = [int(field) for field in fields]
-					[nVertices, nFaces, nEdges] = fields[0:3]
-			elif vertex < nVertices:
-				fields = [float(i) for i in fields]
-				P = Point3D(fields[0],fields[1], fields[2])
-				color = None
-				if len(fields) >= 6:
-					#There is color information
-					if divideColor:
-						color = [float(c)/255.0 for c in fields[3:6]]
-					else:
-						color = [float(c) for c in fields[3:6]]
-				self.addVertex(P, color)
-				vertex = vertex+1
-			elif face < nFaces:
-				#Assume the vertices are specified in CCW order
-				fields = [int(i) for i in fields]
-				meshVerts = fields[1:fields[0]+1]
-				verts = [self.vertices[i] for i in meshVerts]
-				self.addFace(verts)
-				face = face+1
-		fin.close()
-		for v in self.vertices:
-			if v.color:
-				if v.color[0] > 1:
-					#Rescale colors
-					for v2 in self.vertices:
-						v2.color = [a/255.0 for a in v2.color]
-					break*/
+		for (var line = 0; line < lines.length; line++) {
+			//http://blog.tompawlak.org/split-string-into-tokens-javascript
+			var fields = lines[line].match(/\S+/g);
+			if (fields === null) { //Blank line
+				continue;
+			}
+			if (fields[0].length == 0) {
+				continue;
+			}
+			if (fields[0][0] == "#" || fields[0][0] == "\0" || fields[0][0] == " ") {
+				continue;
+			}
+			//Reading header
+			if (nVertices == 0) {
+				if (fields[0] == "OFF" || fields[0] == "COFF") {
+					if (fields.length > 2) {
+						nVertices = parseInt(fields[1]);
+						nFaces = parseInt(fields[2]);
+						nEdges = parseInt(fields[3]);
+					}
+					if (fields[0] == "COFF") {
+						divideColor = true;	
+					}	
+				}
+				else {
+					if (fields.length >= 3) {
+						nVertices = parseInt(fields[0]);
+						nFaces = parseInt(fields[1]);
+						nEdges = parseInt(fields[2]);					
+					}
+					else if (nVertices == 0) {
+						console.log("Error parsing OFF file: Not enough fields for nVertices, nFaces, nEdges");
+					}
+				}
+			}
+			//Reading vertices
+			else if (vertex < nVertices) {
+				if (fields.length < 3) {
+					console.log("Error parsing OFF File: Too few fields on a vertex line");
+					continue;
+				}
+				P = vec3.fromValues(parseFloat(fields[0]), parseFloat(fields[1]), parseFloat(fields[2]));
+				color = null;
+				if (fields.length >= 6) {
+					//There is color information
+					var color;
+					if (divideColor) {
+						color = vec3.fromValues(parseFloat(fields[3])/255.0, parseFloat(fields[4])/255.0, parseFloat(fields[5])/255.0);
+					}
+					else {
+						color = vec3.fromValues(parseFloat(fields[3]), parseFloat(fields[4]), parseFloat(fields[5]));
+					}
+				}
+				this.addVertex(P, color);
+				vertex++;
+			}
+			//Reading faces
+			else if (face < nFaces) {
+				if (fields.length == 0) {
+					continue;
+				}
+				//Assume the vertices are specified in CCW order
+				var NVertices = parseInt(fields[0]);
+				if (fields.length < NVertices+1) {
+					console.log("Error parsing OFF File: Not enough vertex indices specified for a face of length " + NVertices);
+				}
+				var verts = Array(NVertices);
+				for (var i = 0; i < NVertices; i++) {
+					verts[i] = this.vertices[parseInt(fields[i+1])];
+				}
+				this.addFace(verts);
+				face++;
+			}
+		}
+		for (var i = 0; i < this.vertices.length; i++) {
+			if (!(this.vertices[i].color === null)) {
+				if (this.vertices[i].color[0] > 1) {
+					//Rescale colors
+					for (var k = 0; k < this.vertices.length; k++) {
+						vec3.scale(this.vertices[i].color, this.vertices[i].color, 1.0/255.0);
+					}
+					break;
+				}
+			}
+		}
+		console.log("Succesfully loaded OFF File with " + this.vertices.length + " vertices and " + this.faces.length + " faces");
 	}
 	
 	
