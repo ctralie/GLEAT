@@ -372,6 +372,58 @@ function PolyMesh() {
 		return newMesh;
 	}
 	
+	
+	/////////////////////////////////////////////////////////////
+	////                 GEOMETRY METHODS                   /////
+	/////////////////////////////////////////////////////////////
+
+	//Transformations are simple because geometry information is only
+	//stored in the vertices
+	this.Transform = function(matrix) {
+		for (var i = 0; i < this.vertices.length; i++) {
+			vec3.transformMat4(this.vertices[i].pos, this.vertices[i].pos, matrix);
+		}
+		this.needsDisplayUpdate = true;
+		this.needsIndexDisplayUpdate = true;
+	}
+	
+	this.Translate = function(dV) {
+		for (var i = 0; i < this.vertices.length; i++) {
+			vec3.add(this.vertices[i].pos, this.vertices[i].pos, dV);
+		}
+		this.needsDisplayUpdate = true;
+		this.needsIndexDisplayUpdate = true;
+	}
+	
+	this.Scale = function(dx, dy, dz) {
+		for (var i = 0; i < this.vertices.length; i++) {
+			this.vertices[i].pos[0] *= dx;
+			this.vertices[i].pos[1] *= dy;
+			this.vertices[i].pos[2] *= dz;
+		}
+	}
+
+	this.getCentroid = function() {
+		center = vec3.fromValues();
+		for (var i = 0; i < this.vertices.length; i++) {
+			vec3.add(center, center, vertices[i].pos);
+		}
+		vec3.scale(center, center, 1.0/this.vertices.length);
+		return center;
+	}
+	
+	this.getBBox = function() {
+		if (this.vertices.length == 0) {
+			return AABox3D(0, 0, 0, 0, 0, 0);
+		}
+		var P0 = this.vertices[0].pos;
+		var bbox = AABox3D(P0[0], P0[0], P0[1], P0[1], P0[2], P0[2]);
+		for (var i = 0; i < this.vertices.length; i++) {
+			bbox.addPoint(this.vertices[i].pos);
+		}
+		return bbox;
+	}	
+	
 	/////////////////////////////////////////////////////////////
 	////                INPUT/OUTPUT METHODS                /////
 	/////////////////////////////////////////////////////////////
@@ -486,6 +538,10 @@ function PolyMesh() {
 		console.log("Succesfully loaded OFF File with " + this.vertices.length + " vertices and " + this.faces.length + " faces");
 	}
 	
+	
+	/////////////////////////////////////////////////////////////
+	////                     RENDERING                      /////
+	/////////////////////////////////////////////////////////////	
 	
     this.render = function(sProg, ID) {
         gl.bindBuffer(gl.ARRAY_BUFFER, hemisphereVertexPosBuffer);

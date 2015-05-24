@@ -99,6 +99,53 @@ function Line3D(P0, V) {
 	}
 }		
 
+//Axis-aligned 3D box
+function AABox3D(xmin, xmax, ymin, ymax, zmin, zmax) {
+	this.xmin = xmin;
+	this.xmax = xmax;
+	this.ymin = ymin;
+	this.ymax = ymax;
+	this.zmin = zmin;
+	this.zmax = zmax;
+	
+	this.XLen = function() {
+		return this.xmax - this.xmin;
+	}
+	
+	this.YLen = function() {
+		return this.ymax - this.ymin;
+	}
+	
+	this.ZLen(this) = {
+		return this.zmax - this.zmin;
+	}
+	
+	this.getDiagLength = function() {
+		dX = this.XLen()/2;
+		dY = this.YLen()/2;
+		dZ = this.ZLen()/2;
+		return Math.sqrt(dX*dX + dY*dY + dZ*dZ);
+	}
+	
+	this.getCenter = function() {
+		return vec3.fromValues((this.xmax+this.xmin)/2.0, (this.ymax+this.ymin)/2.0, (this.zmax+this.zmin)/2.0);
+	}
+	
+	this.addPoint = function(P) {
+		if (P[0] < this.xmin) { this.xmin = P[0]; }
+		if (P[0] > this.xmax) { this.xmax = P[0]; }
+		if (P[1] < this.ymin) { this.ymin = P[1]; }
+		if (P[1] > this.ymax) { this.ymax = P[1]; }
+		if (P[2] < this.zmin) { this.zmin = P[2]; }
+		if (P[2] > this.zmax) { this.zmax = P[2]; }
+	}
+	
+	this.Union(this, otherBBox) {
+		this.xmax = Math.max(this.xmax, otherBBox.xmax);
+		this.ymax = Math.max(this.ymax, otherBBox.ymax);
+		this.zmax = Math.max(this.zmax, otherBBox.zmax);
+	}
+}
 
 /////////////////////////////////////////////
 ///////////   UTILITY FUNCTIONS   ///////////
