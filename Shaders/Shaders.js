@@ -1,5 +1,5 @@
 ///*****SHADER INITIALIZATION CODE*****///
-//Type 0: Fragment shader, Type 1: Vertex Shader
+var colorShader; //Shader to use vertex colors with lighting
 
 function getShader(gl, filename, type) {
 	var shadersrc = "";
@@ -42,25 +42,22 @@ function initShaders() {
 	var fragmentShader = getShader(gl, "./FragmentShader.glsl", "fragment");
 	var vertexShader = getShader(gl, "./VertexShader.glsl", "vertex");
 
+	colorShader = gl.createProgram();
+	gl.attachShader(colorShader, vertexShader);
+	gl.attachShader(colorShader, fragmentShader);
+	gl.linkProgram(colorShader);
 
-	shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
-
-	if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+	if (!gl.getProgramParameter(colorShader, gl.LINK_STATUS)) {
 	    alert("Could not initialise shaders");
 	}
 
-	//gl.useProgram(shaderProgram);
+	colorShader.vPosAttrib = gl.getAttribLocation(colorShader, "vPos");
+	gl.enableVertexAttribArray(colorShader.vPosAttrib);
+	colorShader.normalAttrib = gl.getAttribLocation(colorShader, "vNormal");
+	gl.enableVertexAttribArray(colorShader.normalAttrib);
+	colorShader.colorAttrib = gl.getAttribLocation(colorShader, "vColor");
+	gl.enableVertexAttribArray(colorShader.colorAttrib);
 
-	shaderProgram.vPosAttrib = gl.getAttribLocation(shaderProgram, "vPos");
-	gl.enableVertexAttribArray(shaderProgram.vPosAttrib);
-
-	shaderProgram.texCoordAttrib = gl.getAttribLocation(shaderProgram, "texCoord");
-	gl.enableVertexAttribArray(shaderProgram.texCoordAttrib);
-
-	shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-	shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-	shaderProgram.IDUniform = gl.getUniformLocation(shaderProgram, "ID");
+	colorShader.pMatrixUniform = gl.getUniformLocation(colorShader, "uPMatrix");
+	colorShader.mvMatrixUniform = gl.getUniformLocation(colorShader, "uMVMatrix");
 }

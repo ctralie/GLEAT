@@ -44,8 +44,7 @@
 		var pMatrix = mat4.create();
 		mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, camera.R/100.0, camera.R*2);
 		var mvMatrix = camera.getMVMatrix();	
-		
-		
+		mesh.render(colorShader, pMatrix, mvMatrix);		
 	}	
 	
 	/////////////////////////////////////////////////////
@@ -129,14 +128,14 @@
 	/////////////////////////////////////////////////////
 	//Step 4: Initialize Web GL
 	/////////////////////////////////////////////////////
-	glcanvas.addEventListener('mousedown', makeClick     );
-	glcanvas.addEventListener('mouseup'  , releaseClick  );
+	glcanvas.addEventListener('mousedown', makeClick);
+	glcanvas.addEventListener('mouseup', releaseClick);
 	glcanvas.addEventListener('mousemove', clickerDragged);
 
 	//Support for mobile devices
-	glcanvas.addEventListener('touchstart', makeClick     );
-	glcanvas.addEventListener('touchend'  , releaseClick  );
-	glcanvas.addEventListener('touchmove' , clickerDragged);
+	glcanvas.addEventListener('touchstart', makeClick);
+	glcanvas.addEventListener('touchend', releaseClick);
+	glcanvas.addEventListener('touchmove', clickerDragged);
 
 	try {
 	    gl = canvas.getContext("experimental-webgl");
@@ -152,6 +151,8 @@
 
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.enable(gl.DEPTH_TEST);
+	
+	gl.useProgram(colorShader);
 
 	requestAnimFrame(repaint);
 
@@ -176,9 +177,6 @@
 			console.log("File type not supported for mesh!  Expecting text or OFF file");
 		}
 	});
-
-	
-	
 </script>
 
 </body>

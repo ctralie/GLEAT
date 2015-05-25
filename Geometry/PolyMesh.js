@@ -253,7 +253,10 @@ function PolyMesh() {
 	this.components = [];
 	this.needsDisplayUpdate = true;
 	this.needsIndexDisplayUpdate = true;
-	
+	this.vertexBuffer = gl.createBuffer();
+	this.normalBuffer = gl.createBuffer();
+	this.indexBuffer = gl.createBuffer();
+	this.colorBuffer = gl.createBuffer();
 	
 	/////////////////////////////////////////////////////////////
 	////                ADD/REMOVE METHODS                  /////
@@ -543,50 +546,102 @@ function PolyMesh() {
 	////                     RENDERING                      /////
 	/////////////////////////////////////////////////////////////	
 	
-    this.render = function(sProg, ID) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, hemisphereVertexPosBuffer);
-        gl.vertexAttribPointer(sProg.vPosAttrib, hemisphereVertexPosBuffer.itemSize, gl.FLOAT, false, 0, 0);
-	    gl.bindBuffer(gl.ARRAY_BUFFER, hemisphereTexCoordBuffer);
-	    gl.vertexAttribPointer(sProg.texCoordAttrib, hemisphereTexCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-	    gl.activeTexture(gl.TEXTURE0);
-	    gl.bindTexture(gl.TEXTURE_2D, texture);
-	    gl.uniform1i(sProg.samplerUniform, 0);
-        gl.uniform1f(sProg.IDUniform, ID);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, hemisphereIdxBuffer);
+	//Copy over vertex and triangle information to the GPU
+	this.updateBuffers = function() {
+		//Vertex Buffer
+		var V = Float32Array(this.vertices.length*3);
+		for (var i = 0; i < this.vertices.length; i++) {
+			V[i*3] = this.vertices[i].pos[0];
+			V[i*3+1] = this.vertices[i].pos[1];
+			V[i*3+2] = this.vertices[i].pos[2];
+		}
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, V, gl.STATIC_DRAW);
+		this.vertexBuffer.itemSize = 3;
+		this.vertexBuffer.numItems = this.vertices.length;
+		
+		//Normal buffer
+		var N = Float32Array(this.vertices.length*3);
+		for (var i = 0; i < this.vertices.length; i++) {
+			var n = this.vertices[i].getNormal();
+			N[i*3] = n[0];
+			N[i*3+1] = n[1];
+			N[i*3+2] = n[2];
+		}
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.normalbuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, N, gl.STATIC_DRAW);
+		this.normalBuffer.itemSize = 3;
+		this.normalBuffer.numItems = this.vertices.length;
+		
+		//Color buffer
+		var C = Float32Array(this.vertices.length*3);
+		for (var i = 0; i < this.vertices.length; i++) {
+			if (!(this.vertices[i].color === null)) {
+				C[i*3] = this.vertices[i].color[0];
+				C[i*3+1] = this.vertices[i].color[1];
+				C[i*3+2] = this.vertices[i].color[2];
+			}
+			else {
+				//Default color is gray
+				C[i*3] = 0.5;
+				C[i*3+1] = 0.5;
+				C[i*3+2] = 0.5;
+			}	
+		}
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, C, gl.STATIC_DRAW);
+		this.colorBuffer.itemSize = 3;
+		this.colorBuffer.numItems = this.vertices.length;
+		
+		//Index Buffer
+		//First figure out how many triangles need to be used
+		var NumTris = 0;
+		for (var i = 0; i < this.faces.length; i++) {
+			NumTris += this.faces[i].edges.length - 2;
+		}
+		var I = Uint16Array(NumTris*3);
+		var i = 0;
+		var faceIdx = 0;
+		//Now copy over the triangle indices
+		while (i < NumTris) {
+			var verts = this.faces[faceIdx].getVertices();
+			for (var t = 0; t < verts.length - 2; t++) {
+				I[i*3] = verts[0].ID;
+				I[i*3+1] = verts[t+1].ID;
+				I[i*3+2] = verts[t+2].ID;
+				i++;
+			}
+			faceIdx++;
+		}
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.indexBuffer);
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, I, gl.STATIC_DRAW);
+		this.indexBuffer.itemSize = 1;
+		this.indexBuffer.numItems = 3*NumTris;
+	}
+	
+	//sProg: Shader program, pMatrix: Perspective projection matrix, mvMatrix: Modelview matrix
+    this.render = function(sProg, pMatrix, mvMatrix) {
+    	if (this.needsDisplayUpdate) {
+    		this.updateBuffers();
+    		this.needsDisplayUpdate = false;
+    	}
+    	//Vertex position buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+        gl.vertexAttribPointer(sProg.vPosAttrib, this.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        //Normal buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+        gl.vertexAttribPointer(sProg.normalAttrib, this.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        //Color buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
+        gl.vertexAttribPointer(sProg.colorAttrib, this.colorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        //Index buffer
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         
-        //Scale, translate, and rotate the sphere appropriately on top of whatever world transformation
+        //Scale, translate, and rotate the mesh appropriately on top of whatever world transformation
         //has already been passed along in mvMatrix
-        this.body.getMotionState().getWorldTransform(trans);
-        var x = trans.getOrigin().x();
-        var y = trans.getOrigin().y();
-        var z = trans.getOrigin().z();
-        var q = trans.getRotation();
-        var TR = mat4.create();
-        mat4.identity(TR);
-        mat4.translate(TR, [x, y, z]);
-        var quatMat = mat4.create();
-        quat4.toMat4([0, 0, 0, 1], quatMat);
-        TR = mat4.multiply(TR, quatMat);
-        var S = mat4.create();
-        mat4.identity(S);
-        mat4.scale(S, [this.radius, this.radius, this.radius]);
-        //Modelview matrix for top half of sphere: M = mvMatrix*T*R*S
-        mvPushMatrix();
-        mat4.scale(S, [-1, 1, 1]);
-        mvMatrix = mat4.multiply(mvMatrix, TR);
-        mvMatrix = mat4.multiply(mvMatrix, S);
-        setMatrixUniforms(sProg);
-        gl.drawElements(gl.TRIANGLES, hemisphereIdxBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-        mvPopMatrix();
-        
-        
-        mvPushMatrix();
-        mat4.scale(S, [-1, 1, -1]);//Bottom half needs to be flipped around the Z-axis
-        mvMatrix = mat4.multiply(mvMatrix, TR);
-        mvMatrix = mat4.multiply(mvMatrix, S);
-        setMatrixUniforms(sProg);
-        gl.drawElements(gl.TRIANGLES, hemisphereIdxBuffer.numItems, gl.UNSIGNED_SHORT, 0);        
-        mvPopMatrix();
+		gl.uniformMatrix4fv(sProg.pMatrixUniform, false, pMatrix);
+		gl.uniformMatrix4fv(sProg.mvMatrixUniform, false, mvMatrix);
+        gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0); 
     }
 }
 
