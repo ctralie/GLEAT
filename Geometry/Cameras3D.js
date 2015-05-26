@@ -1,6 +1,6 @@
 //Need to jointly include Primitives3D.js
 
-function MousePolarCamera(pixWidth, pixHeight, yfov)
+function MousePolarCamera(pixWidth, pixHeight, yfov) {
 	//Coordinate system is defined as in OpenGL as a right
 	//handed system with +z out of the screen, +x to the right,
 	//and +y up
@@ -33,11 +33,11 @@ function MousePolarCamera(pixWidth, pixHeight, yfov)
 		vec3.scaleAndAdd(this.eye, this.center, this.towards, this.R);	
 	}
 	
-	this.centerOnBBox = function(bbox, theta = -math.pi/2, phi = math.pi/2) {
+	this.centerOnBBox = function(bbox, theta, phi) {
+		this.theta = (typeof theta !== 'undefined' ? theta : Math.PI/2);
+		this.phi = (typeof phi !== 'undefined' ? phi : Math.PI/2);
 		this.center = bbox.getCenter();
 		this.R = bbox.getDiagLength()*3;
-		this.theta = theta;
-		this.phi = phi;
 		this.updateVecsFromPolar();
 	}
 
@@ -108,3 +108,4 @@ function MousePolarCamera(pixWidth, pixHeight, yfov)
 	}
 	
 	this.updateVecsFromPolar();
+}

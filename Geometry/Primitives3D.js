@@ -116,7 +116,7 @@ function AABox3D(xmin, xmax, ymin, ymax, zmin, zmax) {
 		return this.ymax - this.ymin;
 	}
 	
-	this.ZLen(this) = {
+	this.ZLen = function() {
 		return this.zmax - this.zmin;
 	}
 	
@@ -140,7 +140,7 @@ function AABox3D(xmin, xmax, ymin, ymax, zmin, zmax) {
 		if (P[2] > this.zmax) { this.zmax = P[2]; }
 	}
 	
-	this.Union(this, otherBBox) {
+	this.Union = function(otherBBox) {
 		this.xmax = Math.max(this.xmax, otherBBox.xmax);
 		this.ymax = Math.max(this.ymax, otherBBox.ymax);
 		this.zmax = Math.max(this.zmax, otherBBox.zmax);

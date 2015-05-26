@@ -253,10 +253,17 @@ function PolyMesh() {
 	this.components = [];
 	this.needsDisplayUpdate = true;
 	this.needsIndexDisplayUpdate = true;
-	this.vertexBuffer = gl.createBuffer();
-	this.normalBuffer = gl.createBuffer();
-	this.indexBuffer = gl.createBuffer();
-	this.colorBuffer = gl.createBuffer();
+	this.vertexBuffer = null;
+	this.normalBuffer = null;
+	this.indexBuffer = null;
+	this.colorBuffer = null;
+	
+	this.initBuffers = function(gl) {
+		this.vertexBuffer = gl.createBuffer();
+		this.normalBuffer = gl.createBuffer();
+		this.indexBuffer = gl.createBuffer();
+		this.colorBuffer = gl.createBuffer();
+	}
 	
 	/////////////////////////////////////////////////////////////
 	////                ADD/REMOVE METHODS                  /////
@@ -582,9 +589,9 @@ function PolyMesh() {
 				C[i*3+2] = this.vertices[i].color[2];
 			}
 			else {
-				//Default color is gray
+				//Default color is greenish gray
 				C[i*3] = 0.5;
-				C[i*3+1] = 0.5;
+				C[i*3+1] = 0.7;
 				C[i*3+2] = 0.5;
 			}	
 		}
@@ -620,11 +627,17 @@ function PolyMesh() {
 	}
 	
 	//sProg: Shader program, pMatrix: Perspective projection matrix, mvMatrix: Modelview matrix
-    this.render = function(sProg, pMatrix, mvMatrix) {
+	//ambientColor, lightingDirection, directionalColor are all vec3s
+    this.render = function(sProg, pMatrix, mvMatrix, ambientColor, lightingDirection, directionalColor) {
+    	if (this.vertexBuffer === null) {
+    		console.log("Warning: Trying to render when buffers have not been initialized");
+    		return;
+    	}
     	if (this.needsDisplayUpdate) {
     		this.updateBuffers();
     		this.needsDisplayUpdate = false;
     	}
+    	//Step 1: Bind all buffers
     	//Vertex position buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.vertexAttribPointer(sProg.vPosAttrib, this.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -637,10 +650,22 @@ function PolyMesh() {
         //Index buffer
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         
-        //Scale, translate, and rotate the mesh appropriately on top of whatever world transformation
-        //has already been passed along in mvMatrix
+        //Step 2: Scale, translate, and rotate the mesh appropriately on top of whatever 
+        //world transformation has already been passed along in mvMatrix, by sending over
+        //the matrices to the GPU as uniforms.  Also send over lighting variables as uniforms
 		gl.uniformMatrix4fv(sProg.pMatrixUniform, false, pMatrix);
 		gl.uniformMatrix4fv(sProg.mvMatrixUniform, false, mvMatrix);
+		//Compute normal transformation matrix from world modelview matrix
+		//(transpose of inverse of upper 3x3 part)
+		nMatrix = mat3.create();
+		mat3.normalFromMat4(nMatrix, mvMatrix);
+		gl.uniformMatrix4fv(sProg.nMatrixUniform, false, nMatrix);
+		
+		gl.uniform3fv(sProg.ambientColorUniform, ambientColor);
+		gl.uniform3fv(sProg.lightingDirectionUniform, lightingDirection);
+		gl.uniform3fv(sProg.directionalColorUniform, directionalColor);
+		
+		//Step 3: Render the mesh
         gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0); 
     }
 }

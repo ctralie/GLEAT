@@ -29,7 +29,8 @@ function getShader(gl, filename, type) {
 	gl.compileShader(shader);
 
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-	    alert(gl.getShaderInfoLog(shader));
+		console.log(gl.getShaderInfoLog(shader));
+	    alert("Could not compile shader");
 	    return null;
 	}
 
@@ -37,10 +38,10 @@ function getShader(gl, filename, type) {
 }
 
 
-function initShaders() {
+function initShaders(gl) {
 	//Ordinary texture shader
-	var fragmentShader = getShader(gl, "./FragmentShader.glsl", "fragment");
-	var vertexShader = getShader(gl, "./VertexShader.glsl", "vertex");
+	var fragmentShader = getShader(gl, "./Shaders/FragmentColorShader.glsl", "fragment");
+	var vertexShader = getShader(gl, "./Shaders/VertexColorShader.glsl", "vertex");
 
 	colorShader = gl.createProgram();
 	gl.attachShader(colorShader, vertexShader);
@@ -60,4 +61,9 @@ function initShaders() {
 
 	colorShader.pMatrixUniform = gl.getUniformLocation(colorShader, "uPMatrix");
 	colorShader.mvMatrixUniform = gl.getUniformLocation(colorShader, "uMVMatrix");
+	colorShader.nMatrixUniform = gl.getUniformLocation(colorShader, "uNMatrix");
+	
+	colorShader.ambientColorUniform = gl.getUniformLocation(colorShader, "uAmbientColor");
+	colorShader.lightingDirectionUniform = gl.getUniformLocation(colorShader, "uLightingDirection");
+	colorShader.directionalColorUniform = gl.getUniformLocation(colorShader, "uDirectionalColor");
 }
