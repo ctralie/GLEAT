@@ -38,6 +38,10 @@ function MousePolarCamera(pixWidth, pixHeight, yfov) {
 		this.phi = (typeof phi !== 'undefined' ? phi : Math.PI/2);
 		this.center = bbox.getCenter();
 		this.R = bbox.getDiagLength()*3;
+		if (this.R == 0) { //Prevent errors for the case of a single point or
+		//mesh not loaded yet
+			this.R = 1;
+		}
 		this.updateVecsFromPolar();
 	}
 

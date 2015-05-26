@@ -258,13 +258,6 @@ function PolyMesh() {
 	this.indexBuffer = null;
 	this.colorBuffer = null;
 	
-	this.initBuffers = function(gl) {
-		this.vertexBuffer = gl.createBuffer();
-		this.normalBuffer = gl.createBuffer();
-		this.indexBuffer = gl.createBuffer();
-		this.colorBuffer = gl.createBuffer();
-	}
-	
 	/////////////////////////////////////////////////////////////
 	////                ADD/REMOVE METHODS                  /////
 	/////////////////////////////////////////////////////////////	
@@ -427,7 +420,7 @@ function PolyMesh() {
 			return AABox3D(0, 0, 0, 0, 0, 0);
 		}
 		var P0 = this.vertices[0].pos;
-		var bbox = AABox3D(P0[0], P0[0], P0[1], P0[1], P0[2], P0[2]);
+		var bbox = new AABox3D(P0[0], P0[0], P0[1], P0[1], P0[2], P0[2]);
 		for (var i = 0; i < this.vertices.length; i++) {
 			bbox.addPoint(this.vertices[i].pos);
 		}
@@ -554,9 +547,23 @@ function PolyMesh() {
 	/////////////////////////////////////////////////////////////	
 	
 	//Copy over vertex and triangle information to the GPU
-	this.updateBuffers = function() {
+	this.updateBuffers = function(gl) {
+		//Check to see if buffers need to be initialized
+		if (this.vertexBuffer === null) {
+			this.vertexBuffer = gl.createBuffer();
+			console.log("New vertex buffer: " + this.vertexBuffer);
+		}
+		if (this.normalBuffer === null) {
+			this.normalBuffer = gl.createBuffer();
+		}
+		if (this.indexBuffer === null) {
+			this.indexBuffer = gl.createBuffer();
+		}
+		if (this.colorBuffer === null) {
+			this.colorBuffer = gl.createBuffer();
+		}
 		//Vertex Buffer
-		var V = Float32Array(this.vertices.length*3);
+		var V = new Float32Array(this.vertices.length*3);
 		for (var i = 0; i < this.vertices.length; i++) {
 			V[i*3] = this.vertices[i].pos[0];
 			V[i*3+1] = this.vertices[i].pos[1];
@@ -568,7 +575,7 @@ function PolyMesh() {
 		this.vertexBuffer.numItems = this.vertices.length;
 		
 		//Normal buffer
-		var N = Float32Array(this.vertices.length*3);
+		var N = new Float32Array(this.vertices.length*3);
 		for (var i = 0; i < this.vertices.length; i++) {
 			var n = this.vertices[i].getNormal();
 			N[i*3] = n[0];
@@ -581,7 +588,7 @@ function PolyMesh() {
 		this.normalBuffer.numItems = this.vertices.length;
 		
 		//Color buffer
-		var C = Float32Array(this.vertices.length*3);
+		var C = new Float32Array(this.vertices.length*3);
 		for (var i = 0; i < this.vertices.length; i++) {
 			if (!(this.vertices[i].color === null)) {
 				C[i*3] = this.vertices[i].color[0];
@@ -606,7 +613,7 @@ function PolyMesh() {
 		for (var i = 0; i < this.faces.length; i++) {
 			NumTris += this.faces[i].edges.length - 2;
 		}
-		var I = Uint16Array(NumTris*3);
+		var I = new Uint16Array(NumTris*3);
 		var i = 0;
 		var faceIdx = 0;
 		//Now copy over the triangle indices
@@ -628,14 +635,14 @@ function PolyMesh() {
 	
 	//sProg: Shader program, pMatrix: Perspective projection matrix, mvMatrix: Modelview matrix
 	//ambientColor, lightingDirection, directionalColor are all vec3s
-    this.render = function(sProg, pMatrix, mvMatrix, ambientColor, lightingDirection, directionalColor) {
+    this.render = function(gl, sProg, pMatrix, mvMatrix, ambientColor, lightingDirection, directionalColor) {
+    	if (this.needsDisplayUpdate) {
+    		this.updateBuffers(gl);
+    		this.needsDisplayUpdate = false;
+    	}
     	if (this.vertexBuffer === null) {
     		console.log("Warning: Trying to render when buffers have not been initialized");
     		return;
-    	}
-    	if (this.needsDisplayUpdate) {
-    		this.updateBuffers();
-    		this.needsDisplayUpdate = false;
     	}
     	//Step 1: Bind all buffers
     	//Vertex position buffer

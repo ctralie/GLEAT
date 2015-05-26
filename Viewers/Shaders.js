@@ -29,8 +29,10 @@ function getShader(gl, filename, type) {
 	gl.compileShader(shader);
 
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		console.log(filename);
+		console.log(shadersrc);
 		console.log(gl.getShaderInfoLog(shader));
-	    alert("Could not compile shader");
+	    //alert("Could not compile shader");
 	    return null;
 	}
 
@@ -38,10 +40,12 @@ function getShader(gl, filename, type) {
 }
 
 
-function initShaders(gl) {
-	//Ordinary texture shader
-	var fragmentShader = getShader(gl, "./Shaders/FragmentColorShader.glsl", "fragment");
-	var vertexShader = getShader(gl, "./Shaders/VertexColorShader.glsl", "vertex");
+function initShaders(gl, relPath) {
+	/////////////////////////////////////////////
+	///////  ORDINARY COLOR SHADER  /////////////
+	/////////////////////////////////////////////
+	var fragmentShader = getShader(gl, relPath + "/FragmentColorShader.glsl", "fragment");
+	var vertexShader = getShader(gl, relPath + "/VertexColorShader.glsl", "vertex");
 
 	colorShader = gl.createProgram();
 	gl.attachShader(colorShader, vertexShader);
@@ -49,7 +53,7 @@ function initShaders(gl) {
 	gl.linkProgram(colorShader);
 
 	if (!gl.getProgramParameter(colorShader, gl.LINK_STATUS)) {
-	    alert("Could not initialise shaders");
+	    //alert("Could not initialise shaders");
 	}
 
 	colorShader.vPosAttrib = gl.getAttribLocation(colorShader, "vPos");
