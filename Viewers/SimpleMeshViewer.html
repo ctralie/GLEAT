@@ -6,6 +6,7 @@
 <!--<script type="text/javascript" src="js/gl-matrix.js"></script>!-->
 <script type="text/javascript" src = "../js/gl-matrix-min.js"></script>
 <script type="text/javascript" src="../js/webgl-utils.js"></script>
+<script type="text/javascript" src="../js/webgl-debug.js"></script>
 <script type="text/javascript" src="../js/numeric-1.2.6.min.js"></script>
 <script type="text/javascript" src="../js/jquery-1.11.1.min.js"></script>
 
@@ -36,7 +37,7 @@
 		var lines = this.result.split("\n");
 		meshCanvas.mesh.loadFile(lines);
 		meshCanvas.centerCamera();
-		requestAnimFrame(meshCanvas.repaint);	
+		requestAnimFrame.apply(meshCanvas.repaint, meshCanvas);	
 	}
 	var meshInput = document.getElementById('meshInput');
 	var result = document.getElementById('text');

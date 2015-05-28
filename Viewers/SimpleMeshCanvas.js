@@ -17,15 +17,14 @@ function SimpleMeshCanvas(glcanvas) {
 	/////////////////////////////////////////////////////
 	//Step 1: Setup repaint function
 	/////////////////////////////////////////////////////	
-	this.repaint = function() {
-		console.log(this);
-		this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
-		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+	this.repaint = function(self) {
+		self.gl.viewport(0, 0, self.gl.viewportWidth, self.gl.viewportHeight);
+		self.gl.clear(self.gl.COLOR_BUFFER_BIT | self.gl.DEPTH_BUFFER_BIT);
 		
 		var pMatrix = mat4.create();
-		mat4.perspective(pMatrix, 45, this.gl.viewportWidth / this.gl.viewportHeight, this.camera.R/100.0, this.camera.R*2);
-		var mvMatrix = this.camera.getMVMatrix();	
-		this.mesh.render(this.gl, colorShader, pMatrix, mvMatrix, this.ambientColor, this.lightingDirection, this.directionalColor);		
+		mat4.perspective(pMatrix, 45, self.gl.viewportWidth / self.gl.viewportHeight, self.camera.R/100.0, self.camera.R*2);
+		var mvMatrix = self.camera.getMVMatrix();	
+		self.mesh.render(self.gl, colorShader, pMatrix, mvMatrix, self.ambientColor, self.lightingDirection, self.directionalColor);
 	}	
 	
 	/////////////////////////////////////////////////////
@@ -42,6 +41,7 @@ function SimpleMeshCanvas(glcanvas) {
 	this.releaseClick = function(evt) {
 		evt.preventDefault();
 		this.MeshCanvas.dragging = false;
+		requestAnimFrame.apply(this.MeshCanvas.repaint, this.MeshCanvas);
 		return false;
 	} 
 
@@ -52,6 +52,7 @@ function SimpleMeshCanvas(glcanvas) {
 		var mousePos = this.MeshCanvas.getMousePos(evt);
 		this.MeshCanvas.lastX = mousePos.X;
 		this.MeshCanvas.lastY = mousePos.Y;
+		requestAnimFrame.apply(this.MeshCanvas.repaint, this.MeshCanvas);
 		return false;
 	} 
 
@@ -75,7 +76,7 @@ function SimpleMeshCanvas(glcanvas) {
 				this.MeshCanvas.camera.orbitLeftRight(dX);
 				this.MeshCanvas.camera.orbitUpDown(dY);
 			}
-		    requestAnimFrame(this.MeshCanvas.repaint);
+		    requestAnimFrame.apply(this.MeshCanvas.repaint, this.MeshCanvas);
 		}
 		return false;
 	}	
@@ -121,6 +122,7 @@ function SimpleMeshCanvas(glcanvas) {
 	this.glcanvas.addEventListener('touchmove', this.clickerDragged);
 
 	try {
+	    //this.gl = WebGLDebugUtils.makeDebugContext(this.glcanvas.getContext("experimental-webgl"));
 	    this.gl = this.glcanvas.getContext("experimental-webgl");
 	    this.gl.viewportWidth = this.glcanvas.width;
 	    this.gl.viewportHeight = this.glcanvas.height;
@@ -131,11 +133,11 @@ function SimpleMeshCanvas(glcanvas) {
 	    alert("Could not initialise WebGL, sorry :-(.  Try a new version of chrome or firefox and make sure your newest graphics drivers are installed");
 	}
 	initShaders(this.gl, ".");
-	this.initPickingFramebuffer();
+	//this.initPickingFramebuffer();
 
 	this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	this.gl.enable(this.gl.DEPTH_TEST);
 	
 	this.gl.useProgram(colorShader);
-	this.repaint();
+	this.repaint(this);
 }

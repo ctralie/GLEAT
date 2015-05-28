@@ -22,14 +22,14 @@ function MeshVertex(P, ID) {
 		for (var i = 0; i < this.edges.length; i++) {
 			//TODO: Takes O(n^2) time right now.  Should use hash or tree-based
 			//set instead of Javascript array
-			if (!(edges[i].f1 === null)) {
-				if (ret.indexOf(edges[i].f1) == -1) {
-					ret.push(edges[i].f1);
+			if (!(this.edges[i].f1 === null)) {
+				if (ret.indexOf(this.edges[i].f1) == -1) {
+					ret.push(this.edges[i].f1);
 				}
 			}
-			if (!(edges[i].f2 === null)) {
-				if (ret.indexOf(edges[i].f2) == -1) {
-					ret.push(edges[i].f2);
+			if (!(this.edges[i].f2 === null)) {
+				if (ret.indexOf(this.edges[i].f2) == -1) {
+					ret.push(this.edges[i].f2);
 				}
 			}
 		}
@@ -49,7 +49,7 @@ function MeshVertex(P, ID) {
 	//Get an estimate of the vertex normal by taking a weighted
 	//average of normals of attached faces	
 	this.getNormal = function() {
-		faces = self.getAttachedFaces();
+		faces = this.getAttachedFaces();
 		totalArea = 0.0;
 		var normal = vec3.fromValues(0, 0, 0);
 		var w;
@@ -57,7 +57,7 @@ function MeshVertex(P, ID) {
 		for (var i = 0; i < faces.length; i++) {
 			w = faces[i].getArea();
 			totalArea += w;
-			N = f.getNormal();
+			N = faces[i].getNormal();
 			vec3.scale(N, N, w);
 			vec3.add(normal, normal, N);
 		}
@@ -446,6 +446,10 @@ function PolyMesh() {
 	}	
 	
 	this.loadOffFile = function(lines) {
+		this.vertices = [];
+		this.edges = [];
+		this.faces = [];
+		this.components = [];
 		var nVertices = 0;
 		var nFaces = 0;
 		var nEdges = 0;
@@ -555,12 +559,15 @@ function PolyMesh() {
 		}
 		if (this.normalBuffer === null) {
 			this.normalBuffer = gl.createBuffer();
+			console.log("New normal buffer: " + this.normalBuffer);
 		}
 		if (this.indexBuffer === null) {
 			this.indexBuffer = gl.createBuffer();
+			console.log("New index buffer: " + this.indexBuffer);
 		}
 		if (this.colorBuffer === null) {
 			this.colorBuffer = gl.createBuffer();
+			console.log("New color buffer: " + this.colorBuffer);
 		}
 		//Vertex Buffer
 		var V = new Float32Array(this.vertices.length*3);
@@ -666,13 +673,14 @@ function PolyMesh() {
 		//(transpose of inverse of upper 3x3 part)
 		nMatrix = mat3.create();
 		mat3.normalFromMat4(nMatrix, mvMatrix);
-		gl.uniformMatrix4fv(sProg.nMatrixUniform, false, nMatrix);
+		gl.uniformMatrix3fv(sProg.nMatrixUniform, false, nMatrix);
 		
 		gl.uniform3fv(sProg.ambientColorUniform, ambientColor);
 		gl.uniform3fv(sProg.lightingDirectionUniform, lightingDirection);
 		gl.uniform3fv(sProg.directionalColorUniform, directionalColor);
 		
 		//Step 3: Render the mesh
+		console.log("Drawing");
         gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0); 
     }
 }
