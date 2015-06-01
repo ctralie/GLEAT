@@ -62,7 +62,7 @@ function MeshVertex(P, ID) {
 			vec3.add(normal, normal, N);
 		}
 		vec3.scale(normal, normal, 1.0/totalArea);
-		return vec3;
+		return normal;
 	}
 }
 
@@ -555,19 +555,19 @@ function PolyMesh() {
 		//Check to see if buffers need to be initialized
 		if (this.vertexBuffer === null) {
 			this.vertexBuffer = gl.createBuffer();
-			console.log("New vertex buffer: " + this.vertexBuffer);
+			//console.log("New vertex buffer: " + this.vertexBuffer);
 		}
 		if (this.normalBuffer === null) {
 			this.normalBuffer = gl.createBuffer();
-			console.log("New normal buffer: " + this.normalBuffer);
+			//console.log("New normal buffer: " + this.normalBuffer);
 		}
 		if (this.indexBuffer === null) {
 			this.indexBuffer = gl.createBuffer();
-			console.log("New index buffer: " + this.indexBuffer);
+			//console.log("New index buffer: " + this.indexBuffer);
 		}
 		if (this.colorBuffer === null) {
 			this.colorBuffer = gl.createBuffer();
-			console.log("New color buffer: " + this.colorBuffer);
+			//console.log("New color buffer: " + this.colorBuffer);
 		}
 		//Vertex Buffer
 		var V = new Float32Array(this.vertices.length*3);
@@ -582,6 +582,7 @@ function PolyMesh() {
 		this.vertexBuffer.numItems = this.vertices.length;
 		
 		//Normal buffer
+		//TODO: NaNs in normals
 		var N = new Float32Array(this.vertices.length*3);
 		for (var i = 0; i < this.vertices.length; i++) {
 			var n = this.vertices[i].getNormal();
@@ -589,7 +590,7 @@ function PolyMesh() {
 			N[i*3+1] = n[1];
 			N[i*3+2] = n[2];
 		}
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.normalbuffer);
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, N, gl.STATIC_DRAW);
 		this.normalBuffer.itemSize = 3;
 		this.normalBuffer.numItems = this.vertices.length;
@@ -634,7 +635,7 @@ function PolyMesh() {
 			}
 			faceIdx++;
 		}
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.indexBuffer);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, I, gl.STATIC_DRAW);
 		this.indexBuffer.itemSize = 1;
 		this.indexBuffer.numItems = 3*NumTris;
@@ -643,6 +644,11 @@ function PolyMesh() {
 	//sProg: Shader program, pMatrix: Perspective projection matrix, mvMatrix: Modelview matrix
 	//ambientColor, lightingDirection, directionalColor are all vec3s
     this.render = function(gl, sProg, pMatrix, mvMatrix, ambientColor, lightingDirection, directionalColor) {
+		/*console.log("this.vertexBuffer = " + this.vertexBuffer);
+		console.log("this.normalBuffer = " + this.normalBuffer);
+		console.log("this.indexBuffer = " + this.indexBuffer);
+		console.log("this.colorBuffer = " + this.colorBuffer);*/
+		
     	if (this.needsDisplayUpdate) {
     		this.updateBuffers(gl);
     		this.needsDisplayUpdate = false;

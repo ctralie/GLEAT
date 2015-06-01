@@ -66,13 +66,13 @@ function SimpleMeshCanvas(glcanvas) {
 		this.MeshCanvas.lastY = mousePos.Y;
 		if (this.dragging) {
 			//Translate/rotate shape
-			if (evt.button() == 1) { //Center click
+			if (evt.button == 1) { //Center click
 				this.MeshCanvas.camera.translate(dX, dY);
 			}
-			else if (evt.button() == 2) { //Right click
+			else if (evt.button == 2) { //Right click
 				this.MeshCanvas.camera.zoom(-dY); //Want to zoom in as the mouse goes up
 			}
-			else if (evt.button() == 0) {
+			else if (evt.button == 0) {
 				this.MeshCanvas.camera.orbitLeftRight(dX);
 				this.MeshCanvas.camera.orbitUpDown(dY);
 			}
