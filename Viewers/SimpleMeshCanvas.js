@@ -1,87 +1,87 @@
 function SimpleMeshCanvas(glcanvas) {
-	this.gl = null;
+	glcanvas.gl = null;
 	this.glcanvas = glcanvas;
-	this.lastX = 0;
-	this.lastY = 0;
-	this.dragging = false;
-	this.justClicked = false;
-	this.camera = new MousePolarCamera(glcanvas.width, glcanvas.height, 0.75);
-	this.mesh = new PolyMesh();
-	this.glcanvas.MeshCanvas = this;
+	glcanvas.lastX = 0;
+	glcanvas.lastY = 0;
+	glcanvas.dragging = false;
+	glcanvas.justClicked = false;
+	glcanvas.camera = new MousePolarCamera(glcanvas.width, glcanvas.height, 0.75);
+	glcanvas.mesh = new PolyMesh();
 	
 	//Lighting info
-	this.ambientColor = vec3.fromValues(0.1, 0.1, 0.1);
-	this.lightingDirection = vec3.fromValues(0, 0, 1);
-	this.directionalColor = vec3.fromValues(0.5, 0.5, 0.5);
+	glcanvas.ambientColor = vec3.fromValues(0.5, 0.5, 0.5);
+	glcanvas.lightingDirection = vec3.fromValues(1, 1, 1);
+	vec3.normalize(glcanvas.lightingDirection, glcanvas.lightingDirection);
+	glcanvas.directionalColor = vec3.fromValues(0.5, 0.5, 0.5);
 	
 	/////////////////////////////////////////////////////
 	//Step 1: Setup repaint function
 	/////////////////////////////////////////////////////	
-	this.repaint = function(self) {
-		self.gl.viewport(0, 0, self.gl.viewportWidth, self.gl.viewportHeight);
-		self.gl.clear(self.gl.COLOR_BUFFER_BIT | self.gl.DEPTH_BUFFER_BIT);
+	glcanvas.repaint = function() {
+		glcanvas.gl.viewport(0, 0, glcanvas.gl.viewportWidth, glcanvas.gl.viewportHeight);
+		glcanvas.gl.clear(glcanvas.gl.COLOR_BUFFER_BIT | glcanvas.gl.DEPTH_BUFFER_BIT);
 		
 		var pMatrix = mat4.create();
-		mat4.perspective(pMatrix, 45, self.gl.viewportWidth / self.gl.viewportHeight, self.camera.R/100.0, self.camera.R*2);
-		var mvMatrix = self.camera.getMVMatrix();	
-		self.mesh.render(self.gl, colorShader, pMatrix, mvMatrix, self.ambientColor, self.lightingDirection, self.directionalColor);
-	}	
+		mat4.perspective(pMatrix, 45, glcanvas.gl.viewportWidth / glcanvas.gl.viewportHeight, glcanvas.camera.R/100.0, glcanvas.camera.R*2);
+		var mvMatrix = glcanvas.camera.getMVMatrix();	
+		glcanvas.mesh.render(glcanvas.gl, colorShader, pMatrix, mvMatrix, glcanvas.ambientColor, glcanvas.lightingDirection, glcanvas.directionalColor);
+	}
 	
 	/////////////////////////////////////////////////////
 	//Step 2: Setup mouse callbacks
 	/////////////////////////////////////////////////////
-	this.getMousePos = function(evt) {
-		var rect = this.glcanvas.getBoundingClientRect();
+	glcanvas.getMousePos = function(evt) {
+		var rect = this.getBoundingClientRect();
 		return {
 		    X: evt.clientX - rect.left,
 		    Y: evt.clientY - rect.top
 		};
 	}
 	
-	this.releaseClick = function(evt) {
+	glcanvas.releaseClick = function(evt) {
 		evt.preventDefault();
-		this.MeshCanvas.dragging = false;
-		requestAnimFrame.apply(this.MeshCanvas.repaint, this.MeshCanvas);
+		this.dragging = false;
+		requestAnimFrame(this.repaint);
 		return false;
 	} 
 
-	this.makeClick = function(evt) {
+	glcanvas.makeClick = function(evt) {
 		evt.preventDefault();
-		this.MeshCanvas.dragging = true;
-		this.MeshCanvas.justClicked = true;
-		var mousePos = this.MeshCanvas.getMousePos(evt);
-		this.MeshCanvas.lastX = mousePos.X;
-		this.MeshCanvas.lastY = mousePos.Y;
-		requestAnimFrame.apply(this.MeshCanvas.repaint, this.MeshCanvas);
+		this.dragging = true;
+		this.justClicked = true;
+		var mousePos = this.getMousePos(evt);
+		this.lastX = mousePos.X;
+		this.lastY = mousePos.Y;
+		requestAnimFrame(this.repaint);
 		return false;
 	} 
 
 	//http://www.w3schools.com/jsref/dom_obj_event.asp
-	this.clickerDragged = function(evt) {
+	glcanvas.clickerDragged = function(evt) {
 		evt.preventDefault();
-		var mousePos = this.MeshCanvas.getMousePos(evt);
-		var dX = mousePos.X - this.MeshCanvas.lastX;
-		var dY = mousePos.Y - this.MeshCanvas.lastY;
-		this.MeshCanvas.lastX = mousePos.X;
-		this.MeshCanvas.lastY = mousePos.Y;
+		var mousePos = this.getMousePos(evt);
+		var dX = mousePos.X - this.lastX;
+		var dY = mousePos.Y - this.lastY;
+		this.lastX = mousePos.X;
+		this.lastY = mousePos.Y;
 		if (this.dragging) {
 			//Translate/rotate shape
 			if (evt.button == 1) { //Center click
-				this.MeshCanvas.camera.translate(dX, dY);
+				this.camera.translate(dX, dY);
 			}
 			else if (evt.button == 2) { //Right click
-				this.MeshCanvas.camera.zoom(-dY); //Want to zoom in as the mouse goes up
+				this.camera.zoom(-dY); //Want to zoom in as the mouse goes up
 			}
 			else if (evt.button == 0) {
-				this.MeshCanvas.camera.orbitLeftRight(dX);
-				this.MeshCanvas.camera.orbitUpDown(-dY);
+				this.camera.orbitLeftRight(dX);
+				this.camera.orbitUpDown(-dY);
 			}
-		    requestAnimFrame.apply(this.MeshCanvas.repaint, this.MeshCanvas);
+		    requestAnimFrame(this.repaint);
 		}
 		return false;
 	}	
 	
-	this.centerCamera = function() {
+	glcanvas.centerCamera = function() {
 		this.camera.centerOnMesh(this.mesh);
 	}
 	
@@ -89,9 +89,9 @@ function SimpleMeshCanvas(glcanvas) {
 	//Step 3: Initialize offscreen rendering for picking
 	/////////////////////////////////////////////////////
 	//https://github.com/gpjt/webgl-lessons/blob/master/lesson16/index.html
-	this.pickingFramebuffer = null;
-	this.pickingTexture = null;
-	this.initPickingFramebuffer = function() {
+	glcanvas.pickingFramebuffer = null;
+	glcanvas.pickingTexture = null;
+	glcanvas.initPickingFramebuffer = function() {
 		this.pickingFramebuffer = this.gl.createFramebuffer();
 		this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.pickingFramebuffer);
 		this.pickingFramebuffer.width = this.glcanvas.width;
@@ -112,32 +112,32 @@ function SimpleMeshCanvas(glcanvas) {
 	/////////////////////////////////////////////////////
 	//Step 4: Initialize Web GL
 	/////////////////////////////////////////////////////
-	this.glcanvas.addEventListener('mousedown', this.makeClick);
-	this.glcanvas.addEventListener('mouseup', this.releaseClick);
-	this.glcanvas.addEventListener('mousemove', this.clickerDragged);
+	glcanvas.addEventListener('mousedown', glcanvas.makeClick);
+	glcanvas.addEventListener('mouseup', glcanvas.releaseClick);
+	glcanvas.addEventListener('mousemove', glcanvas.clickerDragged);
 
 	//Support for mobile devices
-	this.glcanvas.addEventListener('touchstart', this.makeClick);
-	this.glcanvas.addEventListener('touchend', this.releaseClick);
-	this.glcanvas.addEventListener('touchmove', this.clickerDragged);
+	glcanvas.addEventListener('touchstart', glcanvas.makeClick);
+	glcanvas.addEventListener('touchend', glcanvas.releaseClick);
+	glcanvas.addEventListener('touchmove', glcanvas.clickerDragged);
 
 	try {
 	    //this.gl = WebGLDebugUtils.makeDebugContext(this.glcanvas.getContext("experimental-webgl"));
-	    this.gl = this.glcanvas.getContext("experimental-webgl");
-	    this.gl.viewportWidth = this.glcanvas.width;
-	    this.gl.viewportHeight = this.glcanvas.height;
+	    glcanvas.gl = glcanvas.getContext("experimental-webgl");
+	    glcanvas.gl.viewportWidth = glcanvas.width;
+	    glcanvas.gl.viewportHeight = glcanvas.height;
 	} catch (e) {
 		console.log(e);
 	}
-	if (!this.gl) {
+	if (!glcanvas.gl) {
 	    alert("Could not initialise WebGL, sorry :-(.  Try a new version of chrome or firefox and make sure your newest graphics drivers are installed");
 	}
-	initShaders(this.gl, ".");
-	//this.initPickingFramebuffer();
+	initShaders(glcanvas.gl, ".");
+	//glcanvas.initPickingFramebuffer();
 
-	this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	this.gl.enable(this.gl.DEPTH_TEST);
+	glcanvas.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	glcanvas.gl.enable(glcanvas.gl.DEPTH_TEST);
 	
-	this.gl.useProgram(colorShader);
-	this.repaint(this);
+	glcanvas.gl.useProgram(colorShader);
+	requestAnimFrame(glcanvas.repaint);
 }

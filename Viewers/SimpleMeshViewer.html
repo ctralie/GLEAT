@@ -35,9 +35,9 @@
 	/////////////////////////////////////////////////////
 	function onLoadMeshFile(e) {
 		var lines = this.result.split("\n");
-		meshCanvas.mesh.loadFile(lines);
-		meshCanvas.centerCamera();
-		requestAnimFrame.apply(meshCanvas.repaint, meshCanvas);	
+		glcanvas.mesh.loadFile(lines);
+		glcanvas.centerCamera();
+		requestAnimFrame(glcanvas.repaint);
 	}
 	var meshInput = document.getElementById('meshInput');
 	var result = document.getElementById('text');
