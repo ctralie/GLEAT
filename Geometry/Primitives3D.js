@@ -7,6 +7,18 @@ function vecStr(v) {
 	return "(" + v[0] + "," + v[1] + ", "+ v[2] + ")";
 }
 
+function mat4Str(m) {
+	var str = "";
+	for (var i = 0; i < 16; i++) {
+		var col = i%4;
+		var row = (i-col)/4;
+		if (row > 0 && col == 0) {
+			str += "\n";
+		}
+		str += m[col*4+row] + " ";
+	}
+	return str;
+}
 //TODO: Add projection
 
 /////////////////////////////////////////////

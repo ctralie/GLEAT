@@ -74,7 +74,7 @@ function MousePolarCamera(pixWidth, pixHeight, yfov) {
 
 		var transMat = mat4.create();
 		vec3.scale(eye, eye, -1.0);
-		mat4.translate(transMat, transMat, -eye);
+		mat4.translate(transMat, transMat, eye);
 		var mvMatrix = mat4.create();
 		mat4.mul(mvMatrix, rotMat, transMat);
 		return mvMatrix;

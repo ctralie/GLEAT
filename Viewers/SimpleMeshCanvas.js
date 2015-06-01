@@ -74,7 +74,7 @@ function SimpleMeshCanvas(glcanvas) {
 			}
 			else if (evt.button == 0) {
 				this.MeshCanvas.camera.orbitLeftRight(dX);
-				this.MeshCanvas.camera.orbitUpDown(dY);
+				this.MeshCanvas.camera.orbitUpDown(-dY);
 			}
 		    requestAnimFrame.apply(this.MeshCanvas.repaint, this.MeshCanvas);
 		}

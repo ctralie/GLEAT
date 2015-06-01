@@ -686,7 +686,6 @@ function PolyMesh() {
 		gl.uniform3fv(sProg.directionalColorUniform, directionalColor);
 		
 		//Step 3: Render the mesh
-		console.log("Drawing");
         gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0); 
     }
 }
