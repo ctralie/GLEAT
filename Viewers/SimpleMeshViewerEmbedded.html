@@ -20,14 +20,11 @@
 
 <body>
 
-<table>
-<tr><td><h3>Mesh File</h3></td><td><input type = "file" id = "meshInput"></td></tr>
-</table>
 <canvas id="GLCanvas1" style="border: none;" width="800" height="600"></canvas>
 
 <script>
 	var glcanvas = document.getElementById("GLCanvas1");
-	var meshCanvas = new SimpleMeshCanvas(glcanvas);
+	SimpleMeshCanvas(glcanvas);//Add fields to glcanvas that help with rendering
 	glcanvas.mesh.loadFile("a10_sas.off");
 	glcanvas.centerCamera();
 	requestAnimFrame(glcanvas.repaint);

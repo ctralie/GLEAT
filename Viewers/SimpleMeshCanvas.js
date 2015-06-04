@@ -1,6 +1,6 @@
+//A function that adds lots of fields to glcanvas for meshes and rendering
 function SimpleMeshCanvas(glcanvas) {
 	glcanvas.gl = null;
-	this.glcanvas = glcanvas;
 	glcanvas.lastX = 0;
 	glcanvas.lastY = 0;
 	glcanvas.dragging = false;

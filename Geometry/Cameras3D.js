@@ -37,7 +37,7 @@ function MousePolarCamera(pixWidth, pixHeight, yfov) {
 		this.theta = (typeof theta !== 'undefined' ? theta : Math.PI/2);
 		this.phi = (typeof phi !== 'undefined' ? phi : Math.PI/2);
 		this.center = bbox.getCenter();
-		this.R = bbox.getDiagLength()*3;
+		this.R = bbox.getDiagLength()*1.5;
 		if (this.R == 0) { //Prevent errors for the case of a single point or
 		//mesh not loaded yet
 			this.R = 1;
