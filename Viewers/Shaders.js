@@ -68,6 +68,7 @@ function initShaders(gl, relPath) {
 	colorShader.nMatrixUniform = gl.getUniformLocation(colorShader, "uNMatrix");
 	
 	colorShader.ambientColorUniform = gl.getUniformLocation(colorShader, "uAmbientColor");
-	colorShader.lightingDirectionUniform = gl.getUniformLocation(colorShader, "uLightingDirection");
-	colorShader.directionalColorUniform = gl.getUniformLocation(colorShader, "uDirectionalColor");
+	colorShader.light1PosUniform = gl.getUniformLocation(colorShader, "uLight1Pos");
+	colorShader.light2PosUniform = gl.getUniformLocation(colorShader, "uLight2Pos");
+	colorShader.lightColorUniform = gl.getUniformLocation(colorShader, "uLightColor");
 }

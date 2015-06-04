@@ -606,7 +606,7 @@ function PolyMesh() {
 			else {
 				//Default color is greenish gray
 				C[i*3] = 0.5;
-				C[i*3+1] = 0.7;
+				C[i*3+1] = 0.5;
 				C[i*3+2] = 0.5;
 			}	
 		}
@@ -642,8 +642,8 @@ function PolyMesh() {
 	}
 	
 	//sProg: Shader program, pMatrix: Perspective projection matrix, mvMatrix: Modelview matrix
-	//ambientColor, lightingDirection, directionalColor are all vec3s
-    this.render = function(gl, sProg, pMatrix, mvMatrix, ambientColor, lightingDirection, directionalColor) {
+	//ambientColor, light1Pos, light2Pos, lightColor are all vec3s
+    this.render = function(gl, sProg, pMatrix, mvMatrix, ambientColor, light1Pos, light2Pos, lightColor) {
 		/*console.log("this.vertexBuffer = " + this.vertexBuffer);
 		console.log("this.normalBuffer = " + this.normalBuffer);
 		console.log("this.indexBuffer = " + this.indexBuffer);
@@ -682,8 +682,9 @@ function PolyMesh() {
 		gl.uniformMatrix3fv(sProg.nMatrixUniform, false, nMatrix);
 		
 		gl.uniform3fv(sProg.ambientColorUniform, ambientColor);
-		gl.uniform3fv(sProg.lightingDirectionUniform, lightingDirection);
-		gl.uniform3fv(sProg.directionalColorUniform, directionalColor);
+		gl.uniform3fv(sProg.light1PosUniform, light1Pos);
+		gl.uniform3fv(sProg.light2PosUniform, light2Pos);
+		gl.uniform3fv(sProg.lightColorUniform, lightColor);
 		
 		//Step 3: Render the mesh
         gl.drawElements(gl.TRIANGLES, this.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0); 

@@ -10,9 +10,9 @@ function SimpleMeshCanvas(glcanvas) {
 	
 	//Lighting info
 	glcanvas.ambientColor = vec3.fromValues(0.5, 0.5, 0.5);
-	glcanvas.lightingDirection = vec3.fromValues(1, 1, 1);
-	vec3.normalize(glcanvas.lightingDirection, glcanvas.lightingDirection);
-	glcanvas.directionalColor = vec3.fromValues(0.5, 0.5, 0.5);
+	glcanvas.light1Pos = vec3.fromValues(0, 0, 0);
+	glcanvas.light2Pos = vec3.fromValues(0, 0, -1);
+	glcanvas.lightColor = vec3.fromValues(0.5, 0.5, 0.5);
 	
 	/////////////////////////////////////////////////////
 	//Step 1: Setup repaint function
@@ -24,7 +24,7 @@ function SimpleMeshCanvas(glcanvas) {
 		var pMatrix = mat4.create();
 		mat4.perspective(pMatrix, 45, glcanvas.gl.viewportWidth / glcanvas.gl.viewportHeight, glcanvas.camera.R/100.0, glcanvas.camera.R*2);
 		var mvMatrix = glcanvas.camera.getMVMatrix();	
-		glcanvas.mesh.render(glcanvas.gl, colorShader, pMatrix, mvMatrix, glcanvas.ambientColor, glcanvas.lightingDirection, glcanvas.directionalColor);
+		glcanvas.mesh.render(glcanvas.gl, colorShader, pMatrix, mvMatrix, glcanvas.ambientColor, glcanvas.light1Pos, glcanvas.light2Pos, glcanvas.lightColor);
 	}
 	
 	/////////////////////////////////////////////////////
@@ -45,6 +45,12 @@ function SimpleMeshCanvas(glcanvas) {
 		return false;
 	} 
 
+	glcanvas.mouseOut = function(evt) {
+		this.dragging = false;
+		requestAnimFrame(this.repaint);
+		return false;
+	}
+	
 	glcanvas.makeClick = function(evt) {
 		evt.preventDefault();
 		this.dragging = true;
@@ -65,14 +71,22 @@ function SimpleMeshCanvas(glcanvas) {
 		this.lastX = mousePos.X;
 		this.lastY = mousePos.Y;
 		if (this.dragging) {
-			//Translate/rotate shape
-			if (evt.button == 1) { //Center click
-				this.camera.translate(dX, dY);
+			var button = 0;
+			if ("which" in evt) {
+				button = evt.which;
 			}
-			else if (evt.button == 2) { //Right click
+			else {
+				button = evt.button;
+			}
+			button = 0;//TODO: Fix this (get right/center click working)
+			//Translate/rotate shape
+			if (button == 1) { //Center click
+				this.camera.translate(dX, -dY);
+			}
+			else if (button == 2) { //Right click
 				this.camera.zoom(-dY); //Want to zoom in as the mouse goes up
 			}
-			else if (evt.button == 0) {
+			else if (button == 0) {
 				this.camera.orbitLeftRight(dX);
 				this.camera.orbitUpDown(-dY);
 			}
@@ -115,6 +129,7 @@ function SimpleMeshCanvas(glcanvas) {
 	glcanvas.addEventListener('mousedown', glcanvas.makeClick);
 	glcanvas.addEventListener('mouseup', glcanvas.releaseClick);
 	glcanvas.addEventListener('mousemove', glcanvas.clickerDragged);
+	glcanvas.addEventListener('mouseout', glcanvas.mouseOut);
 
 	//Support for mobile devices
 	glcanvas.addEventListener('touchstart', glcanvas.makeClick);

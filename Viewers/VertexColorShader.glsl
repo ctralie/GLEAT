@@ -7,17 +7,22 @@ uniform mat4 uPMatrix;
 uniform mat3 uNMatrix;
 
 uniform vec3 uAmbientColor;
-uniform vec3 uLightingDirection;
-uniform vec3 uDirectionalColor;
+uniform vec3 uLight1Pos;
+uniform vec3 uLight2Pos;
+uniform vec3 uLightColor;
 
 varying vec3 vLightCoeff;
 varying vec3 vColorInterp;
 
 void main(void) {
-    gl_Position = uPMatrix * uMVMatrix * vec4(vPos, 1.0);
+	vec4 mvPosition = uMVMatrix*vec4(vPos, 1.0);
+    gl_Position = uPMatrix * mvPosition;
+	vec3 lightingDir = normalize(uLight1Pos - mvPosition.xyz);
     
     vec3 transformedNormal = uNMatrix*vNormal;
-    float dirLightWeight = max(dot(transformedNormal, uLightingDirection), 0.0);
-    vLightCoeff = uAmbientColor + dirLightWeight*uDirectionalColor;
+	vec3 dPos = vec3(vec4(uLight1Pos, 1.0) - uMVMatrix*vec4(vPos, 1.0));
+	
+    float dirLightWeight = max(dot(transformedNormal, lightingDir), 0.0);
+    vLightCoeff = uAmbientColor + dirLightWeight*uLightColor;
     vColorInterp = vColor;
 }

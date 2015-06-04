@@ -81,13 +81,13 @@ function MousePolarCamera(pixWidth, pixHeight, yfov) {
 	}
 	
 	this.orbitUpDown = function(dP) {
-		dP = 1.5*dP/this.pixHeight;
+		dP = 4*dP/this.pixHeight;
 		this.phi = this.phi+dP;
 		this.updateVecsFromPolar();
 	}
 	
 	this.orbitLeftRight = function(dT) {
-		dT = 1.5*dT/this.pixWidth;
+		dT = 4*dT/this.pixWidth;
 		this.theta = this.theta-dT;
 		this.updateVecsFromPolar();
 	}
