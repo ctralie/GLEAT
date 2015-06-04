@@ -23,31 +23,14 @@
 <table>
 <tr><td><h3>Mesh File</h3></td><td><input type = "file" id = "meshInput"></td></tr>
 </table>
-<canvas id="MainGLCanvas" style="border: none;" width="800" height="600"></canvas>
-
+<canvas id="GLCanvas1" style="border: none;" width="800" height="600"></canvas>
 
 <script>
-	var glcanvas = document.getElementById("MainGLCanvas");
+	var glcanvas = document.getElementById("GLCanvas1");
 	var meshCanvas = new SimpleMeshCanvas(glcanvas);
-
-	/////////////////////////////////////////////////////
-	//Setup mesh input
-	/////////////////////////////////////////////////////
-	function onLoadMeshFile(e) {
-		var lines = this.result.split("\n");
-		glcanvas.mesh.loadFileFromLines(lines);
-		glcanvas.centerCamera();
-		requestAnimFrame(glcanvas.repaint);
-	}
-	var meshInput = document.getElementById('meshInput');
-	var result = document.getElementById('text');
-	
-	meshInput.addEventListener('change', function(e) {
-		var file = meshInput.files[0];
-		var reader = new FileReader();
-		reader.onload = onLoadMeshFile;
-		reader.readAsText(file);
-	});
+	glcanvas.mesh.loadFile("a10_sas.off");
+	glcanvas.centerCamera();
+	requestAnimFrame(glcanvas.repaint);
 </script>
 
 </body>

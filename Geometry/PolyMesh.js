@@ -418,7 +418,20 @@ function PolyMesh() {
 	/////////////////////////////////////////////////////////////
 	////                INPUT/OUTPUT METHODS                /////
 	/////////////////////////////////////////////////////////////
-	this.loadFile = function(lines) {
+	this.loadFile = function(filename) {
+		var textdata = "";
+		$.ajax({
+			async: false,
+			url: filename,
+			success: function (data) {
+			    textdata = data;
+			},
+			dataType: 'text'
+		});
+		this.loadFileFromLines(textdata.split("\n"));
+	}
+	
+	this.loadFileFromLines = function(lines) {
 		if (lines.length == 0) {
 			return;
 		}
