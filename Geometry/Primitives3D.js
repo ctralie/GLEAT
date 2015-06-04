@@ -242,7 +242,7 @@ function getFaceNormal(verts) {
 		vec3.cross(ret, v1, v2);
 		var v1L = vec3.len(v1);
 		var v2L = vec3.len(v2);
-		if (v1L >0 && v2L > 0 && vec3.len(ret)/(v1L*v2L) > 1e-10) {
+		if (v1L >0 && v2L > 0 && vec3.len(ret)/(v1L*v2L) > 0) {
 			vec3.normalize(ret, ret);
 			return ret;
 		}

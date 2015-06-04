@@ -62,6 +62,7 @@ function MeshVertex(P, ID) {
 			vec3.add(normal, normal, N);
 		}
 		vec3.scale(normal, normal, 1.0/totalArea);
+		//console.log(vec3.sqrLen(normal));
 		return normal;
 	}
 }
@@ -70,10 +71,6 @@ function MeshFace(ID) {
 	this.ID = ID;
 	this.edges = []; //Store edges in CCW order
 	this.startV = 0; //Vertex object that starts it off
-	//Cache area, normal, and centroid
-	this.area = null;
-	this.normal = null;
-	this.centroid = null;
 	
 	this.flipNormal = function() {
 		//Reverse the specification of the edges to make the normal
@@ -93,41 +90,32 @@ function MeshFace(ID) {
 	}
 	
 	this.getNormal = function() {
-		if (this.normal === null) {
-			var verts = this.getVertices();
-			for (var i = 0; i < verts.length; i++) {
-				verts[i] = verts[i].pos;
-			}
-			this.normal = getFaceNormal(verts);
+		var verts = this.getVertices();
+		for (var i = 0; i < verts.length; i++) {
+			verts[i] = verts[i].pos;
 		}
-		return this.normal;
+		return getFaceNormal(verts);
 	}
 	
 	this.getArea = function() {
-		if (this.area === null) {
-			var verts = this.getVertices();
-			for (var i = 0; i < verts.length; i++) {
-				verts[i] = verts[i].pos;
-			}
-			this.area = getPolygonArea(verts);
+		var verts = this.getVertices();
+		for (var i = 0; i < verts.length; i++) {
+			verts[i] = verts[i].pos;
 		}
-		return this.area;
+		return getPolygonArea(verts);
 	}
 	
 	this.getCentroid = function() {
-		if (this.centroid === null) {
-			var ret = vec3.fromValues(0, 0, 0);
-			var verts = this.getVertices();
-			if (verts.length == 0) {
-				return ret;
-			}
-			for (var i = 0; i < verts.length; i++) {
-				vec3.add(ret, ret, verts[i].pos);
-			}
-			vec3.scale(ret, ret, 1.0/verts.length);
-			this.centroid = ret;
+		var ret = vec3.fromValues(0, 0, 0);
+		var verts = this.getVertices();
+		if (verts.length == 0) {
+			return ret;
 		}
-		return this.centroid;
+		for (var i = 0; i < verts.length; i++) {
+			vec3.add(ret, ret, verts[i].pos);
+		}
+		vec3.scale(ret, ret, 1.0/verts.length);
+		return ret;
 	}
 	
 	this.getPlane = function() {
@@ -606,7 +594,7 @@ function PolyMesh() {
 			else {
 				//Default color is greenish gray
 				C[i*3] = 0.5;
-				C[i*3+1] = 0.5;
+				C[i*3+1] = 0.55;
 				C[i*3+2] = 0.5;
 			}	
 		}

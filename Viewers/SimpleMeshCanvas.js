@@ -9,10 +9,10 @@ function SimpleMeshCanvas(glcanvas) {
 	glcanvas.mesh = new PolyMesh();
 	
 	//Lighting info
-	glcanvas.ambientColor = vec3.fromValues(0.5, 0.5, 0.5);
+	glcanvas.ambientColor = vec3.fromValues(0.1, 0.1, 0.1);
 	glcanvas.light1Pos = vec3.fromValues(0, 0, 0);
 	glcanvas.light2Pos = vec3.fromValues(0, 0, -1);
-	glcanvas.lightColor = vec3.fromValues(0.5, 0.5, 0.5);
+	glcanvas.lightColor = vec3.fromValues(0.7, 0.7, 0.7);
 	
 	/////////////////////////////////////////////////////
 	//Step 1: Setup repaint function
