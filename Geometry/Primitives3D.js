@@ -163,6 +163,16 @@ function AABox3D(xmin, xmax, ymin, ymax, zmin, zmax) {
 ///////////   UTILITY FUNCTIONS   ///////////
 /////////////////////////////////////////////
 
+//Return the cotangent of the angle formed at the
+//third vertex of a triangle v1-v2-v3
+function getCotangent(v1, v2, v3) {
+	var dV1 = vec3.create();
+	vec3.sub(dV1, v1, v3);
+	var dV2 = vec3.create();
+	vec3.sub(dV2, v2, v3);
+	var cosAngle = vec3.dot(dV1, dV2) / (vec3.len(dV1)*vec3.len(dV2));
+	return cosAngle/Math.sqrt(1-cosAngle*cosAngle);
+}
 
 //Return true if the vertices in the list "verts" all lie
 //in the same plane and false otherwise
