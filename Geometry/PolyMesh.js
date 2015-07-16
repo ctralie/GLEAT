@@ -50,18 +50,16 @@ function MeshVertex(P, ID) {
 	//average of normals of attached faces	
 	this.getNormal = function() {
 		faces = this.getAttachedFaces();
-		totalArea = 0.0;
 		var normal = vec3.fromValues(0, 0, 0);
 		var w;
 		var N;
 		for (var i = 0; i < faces.length; i++) {
 			w = faces[i].getArea();
-			totalArea += w;
 			N = faces[i].getNormal();
 			vec3.scale(N, N, w);
 			vec3.add(normal, normal, N);
 		}
-		vec3.scale(normal, normal, 1.0/totalArea);
+		vec3.normalize(normal, normal);
 		//console.log(vec3.sqrLen(normal));
 		return normal;
 	}
@@ -414,6 +412,10 @@ function PolyMesh() {
 		}
 		return bbox;
 	}	
+	
+	/////////////////////////////////////////////////////////////
+	////                LAPLACIAN MESH METHODS              /////
+	/////////////////////////////////////////////////////////////	
 	
 	/////////////////////////////////////////////////////////////
 	////                INPUT/OUTPUT METHODS                /////
