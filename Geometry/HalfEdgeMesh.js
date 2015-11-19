@@ -4,27 +4,91 @@ function MeshVertex(P, ID) {
     this.halfEdge = null; // points to the "out-going" halfEdge
     this.ID = ID;
     this.color = null;
+    this.normal = null;
+    
+    this.getNormal = function() {
+        return this.normal;
+    }
 }
 
-function MeshFace(ID) {
-    this.ID = ID;
+function MeshFace(index) {
+    this.index = index;
     this.halfEdge = null;
+    this.normal = null;
+    this.area = 0.0;
+    this.edges = [];
+
+    this.getVertices = function() {
+        var ret = Array(this.edges.length);
+        var firstHalfEdge = this.halfEdge;
+        ret[0] = firstHalfEdge.vertex;
+        var currHalfEdge = firstHalfEdge.nextHalfEdge;
+        var count = 1;
+        while (currHalfEdge != firstHalfEdge) {
+            ret[count] = currHalfEdge.vertex;
+            count += 1;
+            currHalfEdge = currHalfEdge.nextHalfEdge;
+        }
+        return ret;
+    }
+    
+    this.getFaceNormalArea = function() {
+        var v1 = vec3.create();
+        vec3.subtract(v1, this.halfEdge.nextHalfEdge.vertex.pos, this.halfEdge.vertex.pos);
+        var v2 = vec3.create();
+        vec3.subtract(v2, this.halfEdge.nextHalfEdge.nextHalfEdge.vertex.pos, this.halfEdge.vertex.pos);
+        var vc = vec3.create();
+        vec3.cross(vc, v1, v2);
+        var area = vec3.length(vc) / 2.0;
+        vec3.normalize(vc, vc);
+
+        return [vc, area];
+    }
+
+    this.getFaceNormal = function() {
+        var v1 = vec3.create();
+        vec3.subtract(v1, this.halfEdge.nextHalfEdge.vertex.pos, this.halfEdge.vertex.pos);
+        var v2 = vec3.create();
+        vec3.subtract(v2, this.halfEdge.nextHalfEdge.nextHalfEdge.vertex.pos, this.halfEdge.vertex.pos);
+        var vc = vec3.create();
+        vec3.cross(vc, v1, v2);
+        vec3.normalize(vc, vc);
+        
+        return vc;
+    }
+    
+    this.getFaceArea = function() {
+        var v1 = vec3.create();
+        vec3.subtract(v1, this.halfEdge.nextHalfEdge.vertex.pos, this.halfEdge.vertex.pos);
+        var v2 = vec3.create();
+        vec3.subtract(v2, this.halfEdge.nextHalfEdge.nextHalfEdge.vertex.pos, this.halfEdge.vertex.pos);
+        var vc = vec3.create();
+        vec3.cross(vc, v1, v2);
+        
+        return vec3.length(vc) / 2.0;
+    }
 }
 
 function MeshEdge(ID) {
-    this.v1 = null;
-    this.v2 = null;
+    this.vertexTuple = [];
+    this.index = ID;
+    // this.v1 = null;
+    // this.v2 = null;
     this.halfEdge = null; // if not boundary, point to arbitrary one of the two half edges associated with it
 }
 
 function MeshHalfEdge(vertex, face) {
-    self.vertex = vertex; // points to the vertex at the "tail" of this halfEdge
-    self.face = face;  // points to the face containing this halfEdge
-    self.edge = null;
-    self.prevHalfEdge = null; // points to the previous halfEdge associated with this edge
-    self.nextHalfEdge = null; // points to the next halfEdge around the current face 
-    self.flipHalfEdge = null; // points to the reverse halfEdge
-    self.onBoundary = true; // true if this halfEdge is contained in a boundary loop; false otherwise
+    this.vertex = vertex; // points to the vertex at the "tail" of this halfEdge
+    this.face = face;  // points to the face containing this halfEdge
+    this.edge = null;
+    this.prevHalfEdge = null; // points to the previous halfEdge associated with this edge
+    this.nextHalfEdge = null; // points to the next halfEdge around the current face 
+    this.flipHalfEdge = null; // points to the reverse halfEdge
+    this.onBoundary = true; // true if this halfEdge is contained in a boundary loop; false otherwise
+
+    this.flip = function() {
+        return this.flipHalfEdge;
+    }
 }
 
 function MeshBuffer() {
@@ -226,10 +290,150 @@ function HalfEdgeMesh() {
     }
 
     this.buildHalfEdgeMesh = function(meshBuffer) {
-        // TODO: translate this function over
-        console.log(meshBuffer.vPosition.length);
-        console.log(meshBuffer.fList.length);
-        console.log("building the half edge mesh from mesh buffer!");
+        // TODO: translate this function from TCMesh
+        var nV = meshBuffer.vPosition.length
+        var nF = meshBuffer.fList.length
+        console.log("nV = " + nV);
+        console.log("nF = " + nF);
+        var edgeCount = {}; // from index tuple to int; check non-manifold edges
+        var existingHalfEdges = {}; // from index tuple to halfEdge object
+
+        var vNormalFlag = false;
+        if ((nV != 0) && (meshBuffer.vNormal.length == nV)) {
+            vNormalFlag = true;
+            console.log("found vertex normals");
+        }
+
+        var vTexCoordFlag = false;
+        if ((nV != 0) && (meshBuffer.vTexCoord.length == nV)) {
+            vTexCoordFlag = true;
+            console.log("found texture coordinates");
+        }
+
+        for (var v = 0; v < nV; v++) {
+            this.addVertex(meshBuffer.vPosition[v], meshBuffer.vColor[v], this.vertices.length);
+        }
+
+        for (var f = 0; f < nF; f++) {
+            if (this.addFace(meshBuffer.fList[f], edgeCount, existingHalfEdges) == -1)
+                this.addFace(meshBuffer.fList[f].reverse(), edgeCount, existingHalfEdges);
+        }
+        
+        if (!vNormalFlag) {
+            for (var i = 0; i < this.vertices.length; i++) {
+                v = this.vertices[i];
+                if (v.onBoundary == true) {
+                    v.normal = v.halfEdge.face.normal;
+                    continue;
+                }
+                var he = v.halfEdge;
+                var sumNormal = vec3.create();
+                vec3.scale(sumNormal, he.face.normal, he.face.area);
+		var sumArea = he.face.area;
+                var initialFaceIndex = he.face.index;
+                if (he.flip() == null) {
+                    v.normal = v.halfEdge.face.normal;
+		    continue;
+                }
+                he = he.flip().nextHalfEdge;
+                while (he.face.index != initialFaceIndex) {
+                    vec3.scaleAndAdd(sumNormal, sumNormal, he.face.normal, he.face.area);
+                    // sumNormal += he.face.normal * he.face.area; 
+                    sumArea += he.face.area;
+                    if (he.flip() == null)
+                        break;
+                    he = he.flip().nextHalfEdge;
+                }
+                v.normal = vec3.create();
+		vec3.scale(v.normal, sumNormal, 1.0/sumArea);
+		vec3.normalize(v.normal, v.normal);
+            }
+        }
+    }
+
+    this.addVertex = function(vPosition, vColor, index) {
+        if (index != this.vertices.length) {
+            console.log("Current Index Out of Bound");
+            return;
+        }
+        vertex = new MeshVertex(vPosition, index);
+        vertex.color = (typeof vColor != 'undefined' ? vColor : null);
+        this.vertices.push(vertex);
+        return vertex;
+    }
+
+    this.addFace = function(vList, edgeCount, existingHalfEdges) {
+        face = new MeshFace(this.faces.length);
+        var localHalfEdgeList = [];
+        var localEdgeList = [];
+
+        for (var i = 0; i < vList.length; i++) {
+            var v = vList[i];
+            var orderedPair = [];
+            if (vList[i] < vList[(i+1) % vList.length])
+                orderedPair = [vList[i], vList[(i+1) % vList.length]];
+            else
+                orderedPair = [vList[(i+1) % vList.length], vList[i]];
+            var edgeVertexTuple = orderedPair;
+            
+            if ((edgeVertexTuple in existingHalfEdges) && (existingHalfEdges[edgeVertexTuple].vertex.index == v)) {
+                // edge and half-edge already exist: either this is a non-manifold edge or the orientation is wrong
+                // first guess is that orientation is wrong; return -1 and try to add an edge of reversed orientation
+                return -1;
+            } else if (edgeVertexTuple in existingHalfEdges) {
+                // the halfEdge does not exist, but its flip does -- create the new halfEdge but don't introduce new edges
+                halfEdge = new MeshHalfEdge(this.vertices[v], face);
+                localHalfEdgeList.push(halfEdge);
+                localHalfEdgeList[localHalfEdgeList.length-1].flipHalfEdge  = existingHalfEdges[edgeVertexTuple];
+                localHalfEdgeList[localHalfEdgeList.length-1].flipHalfEdge.flipHalfEdge = localHalfEdgeList[localHalfEdgeList.length-1];
+                // if flip edge exists, the point associated with this halfEdge can not be on the boundary
+                localHalfEdgeList[localHalfEdgeList.length-1].onBoundary = false;
+                existingHalfEdges[edgeVertexTuple].onBoundary = false;
+                localHalfEdgeList[localHalfEdgeList.length-1].vertex.onBoundary = false;
+                existingHalfEdges[edgeVertexTuple].vertex.onBoundary = false;
+
+                localHalfEdgeList[localHalfEdgeList.length-1].edge = localHalfEdgeList[localHalfEdgeList.length-1].flip().edge;
+            } else {
+                // create new half-edge and new edge
+                edgeCount[edgeVertexTuple] += 1;
+                halfEdge = new MeshHalfEdge(this.vertices[v], face);
+                localHalfEdgeList.push(halfEdge);
+                existingHalfEdges[edgeVertexTuple] = localHalfEdgeList[localHalfEdgeList.length-1];
+                edgeCount[edgeVertexTuple] = 0;
+                edge = new MeshEdge(this.edges.length);
+                edge.vertexTuple = edgeVertexTuple;
+                edge.halfEdge = localHalfEdgeList[localHalfEdgeList.length-1];
+                localEdgeList.push(edge);
+
+                localHalfEdgeList[localHalfEdgeList.length-1].edge = edge;
+            }
+            edgeCount[edgeVertexTuple] += 1;
+
+            if (edgeCount[edgeVertexTuple] > 2) {
+                console.log("edge (" + edgeVertexTuple[0] + "," + edgeVertexTuple[1] + ") is non-manifold");
+                return;
+            }
+            
+            this.vertices[v].halfEdge = localHalfEdgeList[localHalfEdgeList.length-1];
+        }
+        
+        for (var heIndex = 0; heIndex < localHalfEdgeList.length; heIndex++) {
+            localHalfEdgeList[heIndex].prevHalfEdge = localHalfEdgeList[(heIndex - 1) % localHalfEdgeList.length];
+	    localHalfEdgeList[heIndex].nextHalfEdge = localHalfEdgeList[(heIndex + 1) % localHalfEdgeList.length];
+        }
+
+        face.halfEdge = localHalfEdgeList[0];
+        var normalArea = face.getFaceNormalArea();
+        face.normal = normalArea[0];
+        face.area = normalArea[1];
+        for (var i = 0; i < localHalfEdgeList.length; i++) {
+            face.edges.push(localHalfEdgeList[i].edge);
+        }
+        this.faces.push(face);
+        this.halfEdges += localHalfEdgeList;
+        this.edge += localEdgeList;
+        
+        return face;
     }
     
     /////////////////////////////////////////////////////////////
