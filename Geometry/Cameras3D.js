@@ -108,6 +108,8 @@ function MousePolarCamera(pixWidth, pixHeight, yfov) {
 		vec3.cross(r, this.towards, this.up);
 		vec3.scaleAndAdd(this.center, this.center, r, -dx);
 		vec3.scaleAndAdd(this.center, this.center, this.up, -dy);
+		vec3.scaleAndAdd(this.eye, this.eye, r, -dx);
+		vec3.scaleAndAdd(this.eye, this.eye, r, -dy);
 		this.updateVecsFromPolar();
 	}
 	

@@ -7,6 +7,7 @@ function SimpleMeshCanvas(glcanvas) {
 	glcanvas.justClicked = false;
 	glcanvas.camera = new MousePolarCamera(glcanvas.width, glcanvas.height, 0.75);
 	glcanvas.mesh = new PolyMesh();
+	glcanvas.clickType = "LEFT";
 	
 	//Lighting info
 	glcanvas.ambientColor = vec3.fromValues(0.1, 0.1, 0.1);
@@ -51,8 +52,18 @@ function SimpleMeshCanvas(glcanvas) {
 		return false;
 	}
 	
-	glcanvas.makeClick = function(evt) {
+	glcanvas.makeClick = function(e) {
+	    var evt = (e == null ? event:e);
+	    glcanvas.clickType = "LEFT";
 		evt.preventDefault();
+		if (evt.which) {
+		    if (evt.which == 3) glcanvas.clickType = "RIGHT";
+		    if (evt.which == 2) glcanvas.clickType = "MIDDLE";
+		}
+		else if (evt.button) {
+		    if (evt.button == 2) glcanvas.clickType = "RIGHT";
+		    if (evt.button == 4) glcanvas.clickType = "MIDDLE";
+		}
 		this.dragging = true;
 		this.justClicked = true;
 		var mousePos = this.getMousePos(evt);
@@ -71,22 +82,14 @@ function SimpleMeshCanvas(glcanvas) {
 		this.lastX = mousePos.X;
 		this.lastY = mousePos.Y;
 		if (this.dragging) {
-			var button = 0;
-			if ("which" in evt) {
-				button = evt.which;
-			}
-			else {
-				button = evt.button;
-			}
-			button = 0;//TODO: Fix this (get right/center click working)
 			//Translate/rotate shape
-			if (button == 1) { //Center click
+			if (glcanvas.clickType == "MIDDLE") {
 				this.camera.translate(dX, -dY);
 			}
-			else if (button == 2) { //Right click
-				this.camera.zoom(-dY); //Want to zoom in as the mouse goes up
+			else if (glcanvas.clickType == "RIGHT") { //Right click
+				this.camera.zoom(dY); //Want to zoom in as the mouse goes up
 			}
-			else if (button == 0) {
+			else if (glcanvas.clickType == "LEFT") {
 				this.camera.orbitLeftRight(dX);
 				this.camera.orbitUpDown(-dY);
 			}
