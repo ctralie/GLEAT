@@ -24,7 +24,7 @@
 
 <script>
 	var glcanvas = document.getElementById("GLCanvas1");
-	SimpleMeshCanvas(glcanvas);//Add fields to glcanvas that help with rendering
+	SimpleMeshCanvas(glcanvas, './');//Add fields to glcanvas that help with rendering
 	glcanvas.mesh.loadFile("a10_sas.off");
 	glcanvas.centerCamera();
 	requestAnimFrame(glcanvas.repaint);
