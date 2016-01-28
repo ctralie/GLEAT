@@ -1,5 +1,5 @@
 //A function that adds lots of fields to glcanvas for meshes and rendering
-function SimpleMeshCanvas(glcanvas) {
+function SimpleMeshCanvas(glcanvas, shadersRelPath) {
 	glcanvas.gl = null;
 	glcanvas.lastX = 0;
 	glcanvas.lastY = 0;
@@ -150,7 +150,7 @@ function SimpleMeshCanvas(glcanvas) {
 	if (!glcanvas.gl) {
 	    alert("Could not initialise WebGL, sorry :-(.  Try a new version of chrome or firefox and make sure your newest graphics drivers are installed");
 	}
-	initShaders(glcanvas.gl, ".");
+	initShaders(glcanvas.gl, shadersRelPath);
 	//glcanvas.initPickingFramebuffer();
 
 	glcanvas.gl.clearColor(0.0, 0.0, 0.0, 1.0);

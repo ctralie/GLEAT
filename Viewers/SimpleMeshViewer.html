@@ -28,8 +28,13 @@
 
 <script>
 	var glcanvas = document.getElementById("MainGLCanvas");
+<<<<<<< HEAD
     glcanvas.addEventListener("contextmenu", function(e){ e.stopPropagation(); e.preventDefault(); return false; }); //Need this to disable the menu that pops up on right clicking
 	SimpleMeshCanvas(glcanvas);
+=======
+	$('body').on('contextmenu', '#MainGLCanvas', function(e){ return false; }); //Need this to disable the menu that pops up on right clicking
+	SimpleMeshCanvas(glcanvas, './');
+>>>>>>> 7b5c11c64220ffba8d486eef5036a68a47f65ac2
 
 	/////////////////////////////////////////////////////
 	//Setup mesh input
