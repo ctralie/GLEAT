@@ -15,6 +15,10 @@ function SimpleMeshCanvas(glcanvas, shadersRelPath) {
 	glcanvas.light2Pos = vec3.fromValues(0, 0, -1);
 	glcanvas.lightColor = vec3.fromValues(0.9, 0.9, 0.9);
 	
+	//User choices
+	glcanvas.drawNormals = false;
+	glcanvas.drawPoints = false;
+	
 	/////////////////////////////////////////////////////
 	//Step 1: Setup repaint function
 	/////////////////////////////////////////////////////	
@@ -25,7 +29,7 @@ function SimpleMeshCanvas(glcanvas, shadersRelPath) {
 		var pMatrix = mat4.create();
 		mat4.perspective(pMatrix, 45, glcanvas.gl.viewportWidth / glcanvas.gl.viewportHeight, glcanvas.camera.R/100.0, glcanvas.camera.R*2);
 		var mvMatrix = glcanvas.camera.getMVMatrix();	
-		glcanvas.mesh.render(glcanvas.gl, colorShader, pMatrix, mvMatrix, glcanvas.ambientColor, glcanvas.light1Pos, glcanvas.light2Pos, glcanvas.lightColor);
+		glcanvas.mesh.render(glcanvas.gl, glcanvas.shaders, pMatrix, mvMatrix, glcanvas.ambientColor, glcanvas.light1Pos, glcanvas.light2Pos, glcanvas.lightColor, glcanvas.drawNormals, glcanvas.drawPoints);
 	}
 	
 	/////////////////////////////////////////////////////
@@ -150,12 +154,12 @@ function SimpleMeshCanvas(glcanvas, shadersRelPath) {
 	if (!glcanvas.gl) {
 	    alert("Could not initialise WebGL, sorry :-(.  Try a new version of chrome or firefox and make sure your newest graphics drivers are installed");
 	}
-	initShaders(glcanvas.gl, shadersRelPath);
+	glcanvas.shaders = initShaders(glcanvas.gl, shadersRelPath);
 	//glcanvas.initPickingFramebuffer();
 
 	glcanvas.gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	glcanvas.gl.enable(glcanvas.gl.DEPTH_TEST);
 	
-	glcanvas.gl.useProgram(colorShader);
+	glcanvas.gl.useProgram(glcanvas.shaders.colorShader);
 	requestAnimFrame(glcanvas.repaint);
 }
