@@ -17,6 +17,7 @@ function SimpleMeshCanvas(glcanvas, shadersRelPath) {
 	
 	//User choices
 	glcanvas.drawNormals = false;
+	glcanvas.drawEdges = true;
 	glcanvas.drawPoints = false;
 	
 	/////////////////////////////////////////////////////
@@ -28,8 +29,8 @@ function SimpleMeshCanvas(glcanvas, shadersRelPath) {
 		
 		var pMatrix = mat4.create();
 		mat4.perspective(pMatrix, 45, glcanvas.gl.viewportWidth / glcanvas.gl.viewportHeight, glcanvas.camera.R/100.0, glcanvas.camera.R*2);
-		var mvMatrix = glcanvas.camera.getMVMatrix();	
-		glcanvas.mesh.render(glcanvas.gl, glcanvas.shaders, pMatrix, mvMatrix, glcanvas.ambientColor, glcanvas.light1Pos, glcanvas.light2Pos, glcanvas.lightColor, glcanvas.drawNormals, glcanvas.drawPoints);
+		var mvMatrix = glcanvas.camera.getMVMatrix();
+		glcanvas.mesh.render(glcanvas.gl, glcanvas.shaders, pMatrix, mvMatrix, glcanvas.ambientColor, glcanvas.light1Pos, glcanvas.light2Pos, glcanvas.lightColor, glcanvas.drawNormals, glcanvas.drawEdges, glcanvas.drawPoints, COLOR_SHADING);
 	}
 	
 	/////////////////////////////////////////////////////
@@ -160,6 +161,5 @@ function SimpleMeshCanvas(glcanvas, shadersRelPath) {
 	glcanvas.gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	glcanvas.gl.enable(glcanvas.gl.DEPTH_TEST);
 	
-	glcanvas.gl.useProgram(glcanvas.shaders.colorShader);
 	requestAnimFrame(glcanvas.repaint);
 }

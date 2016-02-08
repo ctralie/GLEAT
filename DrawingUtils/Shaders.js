@@ -29,31 +29,42 @@ function initShaders(gl) {
 	//Shader to use vertex colors with lighting
 	var fragmentShader = getShader(gl, ColorShader_Fragment, "fragment");
 	var vertexShader = getShader(gl, ColorShader_Vertex, "vertex");
-
 	var colorShader = gl.createProgram();
 	gl.attachShader(colorShader, vertexShader);
 	gl.attachShader(colorShader, fragmentShader);
 	gl.linkProgram(colorShader);
-
 	if (!gl.getProgramParameter(colorShader, gl.LINK_STATUS)) {
 	    alert("Could not initialise color shader");
 	}
-
 	colorShader.vPosAttrib = gl.getAttribLocation(colorShader, "vPos");
 	gl.enableVertexAttribArray(colorShader.vPosAttrib);
-	colorShader.normalAttrib = gl.getAttribLocation(colorShader, "vNormal");
+	colorShader.vNormalAttrib = gl.getAttribLocation(colorShader, "vNormal");
 	gl.enableVertexAttribArray(colorShader.normalAttrib);
-	colorShader.colorAttrib = gl.getAttribLocation(colorShader, "vColor");
-	gl.enableVertexAttribArray(colorShader.colorAttrib);
-
+	colorShader.vColorAttrib = gl.getAttribLocation(colorShader, "vColor");
+	gl.enableVertexAttribArray(colorShader.vColorAttrib);
 	colorShader.pMatrixUniform = gl.getUniformLocation(colorShader, "uPMatrix");
 	colorShader.mvMatrixUniform = gl.getUniformLocation(colorShader, "uMVMatrix");
 	colorShader.nMatrixUniform = gl.getUniformLocation(colorShader, "uNMatrix");
-	
 	colorShader.ambientColorUniform = gl.getUniformLocation(colorShader, "uAmbientColor");
 	colorShader.light1PosUniform = gl.getUniformLocation(colorShader, "uLight1Pos");
 	colorShader.light2PosUniform = gl.getUniformLocation(colorShader, "uLight2Pos");
 	colorShader.lightColorUniform = gl.getUniformLocation(colorShader, "uLightColor");
+
+	/*//Flat color shader: Simple shader for drawing polygons with flat colors
+	fragmentShader = getShader(gl, FlatColorShader_Fragment, "fragment");
+    vertexShader = getShader(gl, FlatColorShader_Vertex, "vertex");
+    var flatColorShader = gl.createProgram();
+    gl.attachShader(flatColorShader, vertexShader);
+    gl.attachShader(flatColorShader, fragmentShader);
+    gl.linkProgram(flatColorShader);
+    if (!gl.getProgramParameter(flatColorShader, gl.LINK_STATUS)) {
+        alert("Could not initialise line shader");
+    }
+    flatColorShader.vPosAttrib = gl.getAttribLocation(flatColorShader, "vPos");
+    gl.enableVertexAttribArray(flatColorShader.vPosAttrib);
+    flatColorShader.pMatrixUniform = gl.getUniformLocation(flatColorShader, "uPMatrix");
+    flatColorShader.mvMatrixUniform = gl.getUniformLocation(flatColorShader, "uMVMatrix");
+    flatColorShader.vColorUniform = gl.getUniformLocation(flatColorShader, "vColor");*/
 	
 	
 	//Line shader: Simple shader for drawing lines with flat colors,
@@ -93,7 +104,7 @@ function initShaders(gl) {
     pointShader.mvMatrixUniform = gl.getUniformLocation(pointShader, "uMVMatrix");
     pointShader.pSizeUniform = gl.getUniformLocation(pointShader, "pSize");
 	
-	return {colorShader:colorShader, lineShader:lineShader, pointShader:pointShader};
+	return { colorShader:colorShader, lineShader:lineShader, pointShader:pointShader};
 }
 
 
@@ -137,6 +148,23 @@ var ColorShader_Vertex = "attribute vec3 vPos;\n" +
 "    }\n" + 
 "    vLightCoeff = uAmbientColor + dirLightWeight*uLightColor;\n" + 
 "    vColorInterp = vColor;\n" + 
+"}\n";
+
+var FlatColorShader_Fragment = "precision mediump float;\n" + 
+"varying vec4 fColor;\n" + 
+"void main(void) {\n" + 
+"    gl_FragColor = fColor;\n" + 
+"}\n";
+
+var FlatColorShader_Vertex = "attribute vec3 vPos;\n" + 
+"uniform vec4 vColor;\n" + 
+"uniform mat4 uMVMatrix;\n" + 
+"uniform mat4 uPMatrix;\n" + 
+"varying vec4 fColor;\n" + 
+"void main(void) {\n" + 
+"    gl_PointSize = 3.0;\n" + 
+"    gl_Position = uPMatrix * uMVMatrix * vec4(vPos, 1.0);\n" + 
+"    fColor = vColor;\n" + 
 "}\n";
 
 var LineShader_Fragment = "precision mediump float;\n" + 

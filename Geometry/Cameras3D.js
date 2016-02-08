@@ -115,3 +115,64 @@ function MousePolarCamera(pixWidth, pixHeight, yfov) {
 	
 	this.updateVecsFromPolar();
 }
+
+
+//For use with WASD + mouse bindings
+function FPSCamera(pixWidth, pixHeight, yfov) {
+	this.pixWidth = pixWidth;
+	this.pixHeight = pixHeight;
+	this.yfov = yfov;
+	
+	this.towards = vec3.fromValues(0, 0, -1);
+	this.up = vec3.fromValues(0, 1, 0);
+	this.eye = vec3.fromValues(0, 0, 0);
+
+	this.getMVMatrix = function() {
+	    //To keep right handed, make z vector -towards
+	    var R = vec3.create();
+	    vec3.cross(R, this.towards, this.up); //Cross in the opposite direction so R is right
+		var rotMat = mat4.create();
+		for (var i = 0; i < 3; i++) {
+		    rotMat[i*4] = R[i];
+		    rotMat[i*4+1] = this.up[i];
+		    rotMat[i*4+2] = -this.towards[i];
+		}
+        mat4.transpose(rotMat, rotMat);
+		var transMat = mat4.create();
+		vec3.scale(this.eye, this.eye, -1.0);
+		mat4.translate(transMat, transMat, this.eye);
+		var mvMatrix = mat4.create();
+		mat4.mul(mvMatrix, rotMat, transMat);
+		vec3.scale(this.eye, this.eye, -1.0); //Have to move eye back
+		return mvMatrix;
+	}
+	
+	this.translate = function(dx, dy, dz, speed) {
+	    var R = vec3.create();
+	    vec3.cross(R, this.towards, this.up);
+        vec3.scaleAndAdd(this.eye, this.eye, R, dx*speed);
+        vec3.scaleAndAdd(this.eye, this.eye, this.up, dy*speed);
+        vec3.scaleAndAdd(this.eye, this.eye, this.towards, dz*speed);
+	}
+	
+	//lr: left right
+	//ud: up down
+	this.rotate = function(lr, ud) {
+	    console.log("rotate: lr = " + lr + ", ud = " + ud);
+	    var thetalr = (Math.PI/2)*lr/this.pixWidth;
+	    var thetaud = (Math.PI/2)*this.yfov*ud/this.pixHeight;
+	    var rotY = mat4.create();
+	    mat4.rotateY(rotY, rotY, thetalr);
+	    console.log(mat4.str(rotY));
+	    var rotX = mat4.create();
+	    mat4.rotateX(rotX, rotX, thetaud);
+	    vec3.transformMat4(this.towards, this.towards, rotY);
+	    vec3.transformMat4(this.towards, this.towards, rotX);
+	    vec3.transformMat4(this.up, this.up, rotY);
+	    vec3.transformMat4(this.up, this.up, rotX);
+	}
+	
+	this.outputString = function() {
+	    console.log(vec3.str(this.eye) + ": " + vec3.str(this.towards) + " x " + vec3.str(this.up));
+	}
+}
