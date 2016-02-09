@@ -113,6 +113,10 @@ function MousePolarCamera(pixWidth, pixHeight, yfov) {
 		this.updateVecsFromPolar();
 	}
 	
+	this.getPos = function() {
+	    return eye;
+	}
+	
 	this.updateVecsFromPolar();
 }
 
@@ -125,7 +129,7 @@ function FPSCamera(pixWidth, pixHeight, yfov) {
 	
 	this.towards = vec3.fromValues(0, 0, -1);
 	this.up = vec3.fromValues(0, 1, 0);
-	this.eye = vec3.fromValues(0, 0, 0);
+	this.pos = vec3.fromValues(0, 0, 0);
 
 	this.getMVMatrix = function() {
 	    //To keep right handed, make z vector -towards
@@ -139,20 +143,20 @@ function FPSCamera(pixWidth, pixHeight, yfov) {
 		}
         //mat4.transpose(rotMat, rotMat);
 		var transMat = mat4.create();
-		vec3.scale(this.eye, this.eye, -1.0);
-		mat4.translate(transMat, transMat, this.eye);
+		vec3.scale(this.pos, this.pos, -1.0);
+		mat4.translate(transMat, transMat, this.pos);
 		var mvMatrix = mat4.create();
 		mat4.mul(mvMatrix, rotMat, transMat);
-		vec3.scale(this.eye, this.eye, -1.0); //Have to move eye back
+		vec3.scale(this.pos, this.pos, -1.0); //Have to move eye back
 		return mvMatrix;
 	}
 	
 	this.translate = function(dx, dy, dz, speed) {
 	    var R = vec3.create();
 	    vec3.cross(R, this.towards, this.up);
-        vec3.scaleAndAdd(this.eye, this.eye, R, dx*speed);
-        vec3.scaleAndAdd(this.eye, this.eye, this.up, dy*speed);
-        vec3.scaleAndAdd(this.eye, this.eye, this.towards, dz*speed);
+        vec3.scaleAndAdd(this.pos, this.pos, R, dx*speed);
+        vec3.scaleAndAdd(this.pos, this.pos, this.up, dy*speed);
+        vec3.scaleAndAdd(this.pos, this.pos, this.towards, dz*speed);
 	}
 	
 	//lr: left right
@@ -171,6 +175,6 @@ function FPSCamera(pixWidth, pixHeight, yfov) {
 	}
 	
 	this.outputString = function() {
-	    console.log(vec3.str(this.eye) + ": " + vec3.str(this.towards) + " x " + vec3.str(this.up));
+	    console.log(vec3.str(this.pos) + ": " + vec3.str(this.towards) + " x " + vec3.str(this.up));
 	}
 }
