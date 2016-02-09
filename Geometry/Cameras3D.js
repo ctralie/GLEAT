@@ -137,7 +137,7 @@ function FPSCamera(pixWidth, pixHeight, yfov) {
 		    rotMat[i*4+1] = this.up[i];
 		    rotMat[i*4+2] = -this.towards[i];
 		}
-        mat4.transpose(rotMat, rotMat);
+        //mat4.transpose(rotMat, rotMat);
 		var transMat = mat4.create();
 		vec3.scale(this.eye, this.eye, -1.0);
 		mat4.translate(transMat, transMat, this.eye);
@@ -158,12 +158,10 @@ function FPSCamera(pixWidth, pixHeight, yfov) {
 	//lr: left right
 	//ud: up down
 	this.rotate = function(lr, ud) {
-	    console.log("rotate: lr = " + lr + ", ud = " + ud);
 	    var thetalr = (Math.PI/2)*lr/this.pixWidth;
 	    var thetaud = (Math.PI/2)*this.yfov*ud/this.pixHeight;
 	    var rotY = mat4.create();
 	    mat4.rotateY(rotY, rotY, thetalr);
-	    console.log(mat4.str(rotY));
 	    var rotX = mat4.create();
 	    mat4.rotateX(rotX, rotX, thetaud);
 	    vec3.transformMat4(this.towards, this.towards, rotY);
