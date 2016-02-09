@@ -840,7 +840,7 @@ function PolyMesh() {
         //Step 4: Draw lines and points for vertices, edges, and normals if requested
         if (this.needsDisplayUpdate) {
             if (this.drawer === null) {
-                this.drawer = SimpleDrawer(gl, shaders);
+                this.drawer = new SimpleDrawer(gl, shaders);
             }
             this.drawer.reset();
         }

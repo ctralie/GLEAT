@@ -27,7 +27,6 @@ function SimpleDrawer(gl, shaders) {
     }
     
     this.updateBuffers = function() {
-        console.log("Updating Buffers");
         var gl = this.gl;
         
         //UPDATE LINES
@@ -95,20 +94,20 @@ function SimpleDrawer(gl, shaders) {
     //C: 3D array of RGB colors in the range [0, 1]
     this.drawLine = function(P1, P2, C) {
         for (var i = 0; i < 3; i++) {
-            linesPoints.push(P1[i]);
-            linesColors.push(C[i]);
+            this.linesPoints.push(P1[i]);
+            this.linesColors.push(C[i]);
         }
         for (var i = 0; i < 3; i++) {
-            linesPoints.push(P2[i]);
-            linesColors.push(C[i]);
+            this.linesPoints.push(P2[i]);
+            this.linesColors.push(C[i]);
         }
         this.needsDisplayUpdate = true;
     }
     
     this.drawPoint = function(P, C) {
         for (var i = 0; i < 3; i++) {
-            points.push(P[i]);
-            pointsColors.push(C[i]);
+            this.points.push(P[i]);
+            this.pointsColors.push(C[i]);
         }
         this.needsDisplayUpdate = true;
     }
@@ -155,6 +154,4 @@ function SimpleDrawer(gl, shaders) {
             gl.drawArrays(gl.POINTS, 0, this.pointsVBO.numItems);
         }
     }
-    
-    return this;
 }
