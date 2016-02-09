@@ -929,3 +929,27 @@ function getIcosahedronMesh() {
     return mesh;
 }
 
+function getCylinderMesh(axis, center, R, H, color, res) {
+    cylinder = new PolyMesh();
+    var vertexArr = [];
+    var vals = [0, 0, 0];
+    //Make the main cylinder part
+    for (var i = 0; i < res; i++) {
+        vertexArr.push([]);
+        for (var j = 0; j < 2; j++) {
+            vals[axis[0]] = R*Math.cos(i*2*3.141/res);
+            vals[axis[1]] = R*Math.sin(i*2*3.141/res);
+            vals[axis[2]] = H/2*(2*j-1)
+            var v = vec3.fromValues(vals[0] + center[0], vals[1] + center[1], vals[2] + center[2]);
+            vertexArr[i].push(cylinder.addVertex(v, color));
+        }
+    }
+    //Make the faces
+    var i2;
+    for (var i1 = 0; i1 < res; i1++) {
+        i2 = (i1+1) % res;
+        cylinder.addFace([vertexArr[i1][0], vertexArr[i2][0], vertexArr[i2][1]]);
+        cylinder.addFace([vertexArr[i1][0], vertexArr[i2][1], vertexArr[i1][1]]);
+    }
+    return cylinder;
+}
