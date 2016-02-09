@@ -87,12 +87,18 @@ function MeshFace(ID) {
         return ret;
     }
     
-    this.getNormal = function() {
-        var verts = this.getVertices();
-        for (var i = 0; i < verts.length; i++) {
-            verts[i] = verts[i].pos;
+    this.getVerticesPos = function() {
+        var ret = Array(this.edges.length);
+        var v = this.startV;
+        for (var i = 0; i < this.edges.length; i++) {
+            ret[i] = v.pos;
+            v = this.edges[i].vertexAcross(v);
         }
-        return getFaceNormal(verts);
+        return ret;
+    }
+    
+    this.getNormal = function() {
+        return getFaceNormal(this.getVerticesPos());
     }
     
     this.getArea = function() {
