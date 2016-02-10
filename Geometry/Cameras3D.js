@@ -168,11 +168,19 @@ function FPSCamera(pixWidth, pixHeight, yfov) {
     }
     
     //Rotate the right direction around the up direction
+    //but project onto the XY plane
     this.rotateLeftRight = function(lr) {
         var thetalr = (Math.PI/2)*lr/this.pixWidth;
         var q = quat.create();
         quat.setAxisAngle(q, this.up, thetalr);
         vec3.transformQuat(this.right, this.right, q);
+        //Snap to the XY plane to keep things from getting wonky
+        this.right[1] = 0;
+        vec3.normalize(this.right, this.right);
+        //Make sure the up vector is still orthogonal
+        var dot = vec3.dot(this.right, this.up);
+        vec3.scaleAndAdd(this.up, this.up, this.right, -dot);
+        vec3.normalize(this.up, this.up);
     }
     
     this.outputString = function() {
