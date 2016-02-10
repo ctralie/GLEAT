@@ -128,11 +128,11 @@ function SimpleDrawer(gl, shaders) {
         if (this.linesPoints.length > 0) {
             //console.log("Drawing lines: ", + this.linesVBO);
             gl.useProgram(this.lineShader);
-		    gl.bindBuffer(gl.ARRAY_BUFFER, this.linesVBO);
-		    gl.vertexAttribPointer(this.lineShader.vPosAttrib, this.linesVBO.itemSize, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.linesVBO);
+            gl.vertexAttribPointer(this.lineShader.vPosAttrib, this.linesVBO.itemSize, gl.FLOAT, false, 0, 0);
 
-		    gl.bindBuffer(gl.ARRAY_BUFFER, this.linesCVBO);
-		    gl.vertexAttribPointer(this.lineShader.vColorAttrib, this.linesCVBO.itemSize, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.linesCVBO);
+            gl.vertexAttribPointer(this.lineShader.vColorAttrib, this.linesCVBO.itemSize, gl.FLOAT, false, 0, 0);
 
             gl.uniformMatrix4fv(this.lineShader.pMatrixUniform, false, pMatrix);
             gl.uniformMatrix4fv(this.lineShader.mvMatrixUniform, false, mvMatrix);
@@ -142,11 +142,11 @@ function SimpleDrawer(gl, shaders) {
         if (this.points.length > 0) {
             //console.log("Drawing points: " + this.pointsVBO);
             gl.useProgram(this.pointShader);
-		    gl.bindBuffer(gl.ARRAY_BUFFER, this.pointsVBO);
-		    gl.vertexAttribPointer(this.pointShader.vPosAttrib, this.pointsVBO.itemSize, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.pointsVBO);
+            gl.vertexAttribPointer(this.pointShader.vPosAttrib, this.pointsVBO.itemSize, gl.FLOAT, false, 0, 0);
 
-		    gl.bindBuffer(gl.ARRAY_BUFFER, this.pointsCVBO);
-		    gl.vertexAttribPointer(this.pointShader.vColorAttrib, this.pointsCVBO.itemSize, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.pointsCVBO);
+            gl.vertexAttribPointer(this.pointShader.vColorAttrib, this.pointsCVBO.itemSize, gl.FLOAT, false, 0, 0);
 
             gl.uniformMatrix4fv(this.pointShader.pMatrixUniform, false, pMatrix);
             gl.uniformMatrix4fv(this.pointShader.mvMatrixUniform, false, mvMatrix);

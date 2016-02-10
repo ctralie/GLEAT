@@ -28,28 +28,28 @@
 
 
 <script>
-	var glcanvas = document.getElementById("MainGLCanvas");
+    var glcanvas = document.getElementById("MainGLCanvas");
     glcanvas.addEventListener("contextmenu", function(e){ e.stopPropagation(); e.preventDefault(); return false; }); //Need this to disable the menu that pops up on right clicking
-	SimpleMeshCanvas(glcanvas);
+    SimpleMeshCanvas(glcanvas);
 
-	/////////////////////////////////////////////////////
-	//Setup mesh input
-	/////////////////////////////////////////////////////
-	function onLoadMeshFile(e) {
-		var lines = this.result.split("\n");
-		glcanvas.mesh.loadFileFromLines(lines);
-		glcanvas.centerCamera();
-		requestAnimFrame(glcanvas.repaint);
-	}
-	var meshInput = document.getElementById('meshInput');
-	var result = document.getElementById('text');
-	
-	meshInput.addEventListener('change', function(e) {
-		var file = meshInput.files[0];
-		var reader = new FileReader();
-		reader.onload = onLoadMeshFile;
-		reader.readAsText(file);
-	});
+    /////////////////////////////////////////////////////
+    //Setup mesh input
+    /////////////////////////////////////////////////////
+    function onLoadMeshFile(e) {
+        var lines = this.result.split("\n");
+        glcanvas.mesh.loadFileFromLines(lines);
+        glcanvas.centerCamera();
+        requestAnimFrame(glcanvas.repaint);
+    }
+    var meshInput = document.getElementById('meshInput');
+    var result = document.getElementById('text');
+    
+    meshInput.addEventListener('change', function(e) {
+        var file = meshInput.files[0];
+        var reader = new FileReader();
+        reader.onload = onLoadMeshFile;
+        reader.readAsText(file);
+    });
 </script>
 
 </body>
