@@ -127,19 +127,19 @@ function FPSCamera(pixWidth, pixHeight, yfov) {
 	this.pixHeight = pixHeight;
 	this.yfov = yfov;
 	
-	this.towards = vec3.fromValues(0, 0, -1);
+	this.right = vec3.fromValues(1, 0, 0);
 	this.up = vec3.fromValues(0, 1, 0);
 	this.pos = vec3.fromValues(0, 0, 0);
 
 	this.getMVMatrix = function() {
 	    //To keep right handed, make z vector -towards
-	    var R = vec3.create();
-	    vec3.cross(R, this.towards, this.up); //Cross in the opposite direction so R is right
+	    var T = vec3.create();
+	    vec3.cross(T, this.right, this.up);
 		var rotMat = mat4.create();
 		for (var i = 0; i < 3; i++) {
-		    rotMat[i*4] = R[i];
+		    rotMat[i*4] = this.right[i];
 		    rotMat[i*4+1] = this.up[i];
-		    rotMat[i*4+2] = -this.towards[i];
+		    rotMat[i*4+2] = T[i];
 		}
         //mat4.transpose(rotMat, rotMat);
 		var transMat = mat4.create();
@@ -152,26 +152,27 @@ function FPSCamera(pixWidth, pixHeight, yfov) {
 	}
 	
 	this.translate = function(dx, dy, dz, speed) {
-	    var R = vec3.create();
-	    vec3.cross(R, this.towards, this.up);
-        vec3.scaleAndAdd(this.pos, this.pos, R, dx*speed);
+	    var T = vec3.create();
+	    vec3.cross(T, this.up, this.right);//Cross in opposite order so moving forward
+        vec3.scaleAndAdd(this.pos, this.pos, this.right, dx*speed);
         vec3.scaleAndAdd(this.pos, this.pos, this.up, dy*speed);
-        vec3.scaleAndAdd(this.pos, this.pos, this.towards, dz*speed);
+        vec3.scaleAndAdd(this.pos, this.pos, T, dz*speed);
 	}
 	
-	//lr: left right
-	//ud: up down
-	this.rotate = function(lr, ud) {
-	    var thetalr = (Math.PI/2)*lr/this.pixWidth;
+	//Rotate the up direction around the right direction
+	this.rotateUpDown = function(ud) {
 	    var thetaud = (Math.PI/2)*this.yfov*ud/this.pixHeight;
-	    var rotY = mat4.create();
-	    mat4.rotateY(rotY, rotY, thetalr);
-	    var rotX = mat4.create();
-	    mat4.rotateX(rotX, rotX, thetaud);
-	    vec3.transformMat4(this.towards, this.towards, rotY);
-	    vec3.transformMat4(this.towards, this.towards, rotX);
-	    vec3.transformMat4(this.up, this.up, rotY);
-	    vec3.transformMat4(this.up, this.up, rotX);
+	    var q = quat.create();
+	    quat.setAxisAngle(q, this.right, thetaud);
+	    vec3.transformQuat(this.up, this.up, q);
+	}
+	
+	//Rotate the right direction around the up direction
+	this.rotateLeftRight = function(lr) {
+	    var thetalr = (Math.PI/2)*lr/this.pixWidth;
+	    var q = quat.create();
+	    quat.setAxisAngle(q, this.up, thetalr);
+	    vec3.transformQuat(this.right, this.right, q);
 	}
 	
 	this.outputString = function() {
