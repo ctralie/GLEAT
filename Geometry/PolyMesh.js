@@ -87,11 +87,12 @@ function MeshFace(ID) {
         return ret;
     }
     
+    //Return a cloned array of mesh vertices
     this.getVerticesPos = function() {
         var ret = Array(this.edges.length);
         var v = this.startV;
         for (var i = 0; i < this.edges.length; i++) {
-            ret[i] = v.pos;
+            ret[i] = vec3.clone(v.pos);
             v = this.edges[i].vertexAcross(v);
         }
         return ret;
