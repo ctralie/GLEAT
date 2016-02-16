@@ -157,6 +157,13 @@ function AABox3D(xmin, xmax, ymin, ymax, zmin, zmax) {
         this.ymax = Math.max(this.ymax, otherBBox.ymax);
         this.zmax = Math.max(this.zmax, otherBBox.zmax);
     }
+    
+    this.getStr = function() {
+        let s = "[" + this.xmin + ", " + this.xmax + "]";
+        s += " x " + "[" + this.ymin + ", " + this.ymax + "]";
+        s += " x " + "[" + this.zmin + ", " + this.zmax + "]";
+        return s;
+    }
 }
 
 /////////////////////////////////////////////
