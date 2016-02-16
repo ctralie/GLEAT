@@ -15,7 +15,7 @@ function mat4Str(m) {
         if (row > 0 && col == 0) {
             str += "\n";
         }
-        str += m[col*4+row] + " ";
+        str += m[col*4+row].toFixed(3) + " ";
     }
     return str;
 }
