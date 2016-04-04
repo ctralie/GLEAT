@@ -23,6 +23,8 @@ function SimpleDrawer(gl, shaders) {
     this.reset = function() {
         this.linesPoints = [];
         this.linesColors = [];
+        this.points = [];
+        this.pointsColors = [];
         this.needsDisplayUpdate = true;
     }
     
