@@ -15,7 +15,7 @@ function mat4Str(m) {
         if (row > 0 && col == 0) {
             str += "\n";
         }
-        str += m[col*4+row].toFixed(3) + " ";
+        str += m[col*4+row] + " ";
     }
     return str;
 }
@@ -156,13 +156,6 @@ function AABox3D(xmin, xmax, ymin, ymax, zmin, zmax) {
         this.xmax = Math.max(this.xmax, otherBBox.xmax);
         this.ymax = Math.max(this.ymax, otherBBox.ymax);
         this.zmax = Math.max(this.zmax, otherBBox.zmax);
-    }
-    
-    this.getStr = function() {
-        let s = "[" + this.xmin + ", " + this.xmax + "]";
-        s += " x " + "[" + this.ymin + ", " + this.ymax + "]";
-        s += " x " + "[" + this.zmin + ", " + this.zmax + "]";
-        return s;
     }
 }
 

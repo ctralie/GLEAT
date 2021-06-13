@@ -24,36 +24,32 @@ function getShader(gl, shadersrc, type) {
 }
 
 
-function initShaders(gl, linesptsOnly) {
+function initShaders(gl) {
     //////////ColorShader: Ordinary color shader for drawing meshes
     //Shader to use vertex colors with lighting
-    let colorShader = null;
-    let fragmentShader = null;
-    let vertexShader = null;
-    if (linesptsOnly === undefined) {
-        let fragmentShader = getShader(gl, ColorShader_Fragment, "fragment");
-        let vertexShader = getShader(gl, ColorShader_Vertex, "vertex");
-        colorShader = gl.createProgram();
-        gl.attachShader(colorShader, vertexShader);
-        gl.attachShader(colorShader, fragmentShader);
-        gl.linkProgram(colorShader);
-        if (!gl.getProgramParameter(colorShader, gl.LINK_STATUS)) {
-            alert("Could not initialise color shader");
-        }
-        colorShader.vPosAttrib = gl.getAttribLocation(colorShader, "vPos");
-        gl.enableVertexAttribArray(colorShader.vPosAttrib);
-        colorShader.vNormalAttrib = gl.getAttribLocation(colorShader, "vNormal");
-        gl.enableVertexAttribArray(colorShader.normalAttrib);
-        colorShader.vColorAttrib = gl.getAttribLocation(colorShader, "vColor");
-        gl.enableVertexAttribArray(colorShader.vColorAttrib);
-        colorShader.pMatrixUniform = gl.getUniformLocation(colorShader, "uPMatrix");
-        colorShader.mvMatrixUniform = gl.getUniformLocation(colorShader, "uMVMatrix");
-        colorShader.nMatrixUniform = gl.getUniformLocation(colorShader, "uNMatrix");
-        colorShader.ambientColorUniform = gl.getUniformLocation(colorShader, "uAmbientColor");
-        colorShader.light1PosUniform = gl.getUniformLocation(colorShader, "uLight1Pos");
-        colorShader.light2PosUniform = gl.getUniformLocation(colorShader, "uLight2Pos");
-        colorShader.lightColorUniform = gl.getUniformLocation(colorShader, "uLightColor");
+    var fragmentShader = getShader(gl, ColorShader_Fragment, "fragment");
+    var vertexShader = getShader(gl, ColorShader_Vertex, "vertex");
+    var colorShader = gl.createProgram();
+    gl.attachShader(colorShader, vertexShader);
+    gl.attachShader(colorShader, fragmentShader);
+    gl.linkProgram(colorShader);
+    if (!gl.getProgramParameter(colorShader, gl.LINK_STATUS)) {
+        alert("Could not initialise color shader");
     }
+    colorShader.vPosAttrib = gl.getAttribLocation(colorShader, "vPos");
+    gl.enableVertexAttribArray(colorShader.vPosAttrib);
+    colorShader.vNormalAttrib = gl.getAttribLocation(colorShader, "vNormal");
+    gl.enableVertexAttribArray(colorShader.normalAttrib);
+    colorShader.vColorAttrib = gl.getAttribLocation(colorShader, "vColor");
+    gl.enableVertexAttribArray(colorShader.vColorAttrib);
+    colorShader.pMatrixUniform = gl.getUniformLocation(colorShader, "uPMatrix");
+    colorShader.mvMatrixUniform = gl.getUniformLocation(colorShader, "uMVMatrix");
+    colorShader.nMatrixUniform = gl.getUniformLocation(colorShader, "uNMatrix");
+    colorShader.ambientColorUniform = gl.getUniformLocation(colorShader, "uAmbientColor");
+    colorShader.light1PosUniform = gl.getUniformLocation(colorShader, "uLight1Pos");
+    colorShader.light2PosUniform = gl.getUniformLocation(colorShader, "uLight2Pos");
+    colorShader.lightColorUniform = gl.getUniformLocation(colorShader, "uLightColor");
+
     /*//Flat color shader: Simple shader for drawing polygons with flat colors
     fragmentShader = getShader(gl, FlatColorShader_Fragment, "fragment");
     vertexShader = getShader(gl, FlatColorShader_Vertex, "vertex");
@@ -75,7 +71,7 @@ function initShaders(gl, linesptsOnly) {
     //usually for debugging
     fragmentShader = getShader(gl, LineShader_Fragment, "fragment");
     vertexShader = getShader(gl, LineShader_Vertex, "vertex");
-    let lineShader = gl.createProgram();
+    var lineShader = gl.createProgram();
     gl.attachShader(lineShader, vertexShader);
     gl.attachShader(lineShader, fragmentShader);
     gl.linkProgram(lineShader);
@@ -93,7 +89,7 @@ function initShaders(gl, linesptsOnly) {
     //usually for debugging (for now exactly the same as line shader)
     fragmentShader = getShader(gl, PointShader_Fragment, "fragment");
     vertexShader = getShader(gl, PointShader_Vertex, "vertex");
-    let pointShader = gl.createProgram();
+    var pointShader = gl.createProgram();
     gl.attachShader(pointShader, vertexShader);
     gl.attachShader(pointShader, fragmentShader);
     gl.linkProgram(pointShader);

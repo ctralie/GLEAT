@@ -23,8 +23,6 @@ function SimpleDrawer(gl, shaders) {
     this.reset = function() {
         this.linesPoints = [];
         this.linesColors = [];
-        this.points = [];
-        this.pointsColors = [];
         this.needsDisplayUpdate = true;
     }
     
@@ -138,6 +136,7 @@ function SimpleDrawer(gl, shaders) {
 
             gl.uniformMatrix4fv(this.lineShader.pMatrixUniform, false, pMatrix);
             gl.uniformMatrix4fv(this.lineShader.mvMatrixUniform, false, mvMatrix);
+            gl.lineWidth(3.0);
             gl.drawArrays(gl.LINES, 0, this.linesVBO.numItems);
         }
 
